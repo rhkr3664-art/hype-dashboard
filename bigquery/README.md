@@ -19,7 +19,7 @@
 ```
 python bigquery/run_mart.py        # 전체 다시 만들기
 python bigquery/validate_mart.py   # 노트북 숫자와 비교 (23개 항목, 하나라도 다르면 실패)
-python bigquery/export_json.py     # dashboard/data.json 만들기
+python bigquery/export_json.py     # docs/data.json 만들기 (docs/index.html 대시보드가 읽음)
 ```
 
 자동 갱신: `.github/workflows/update-data.yml` (매일 09:00 KST). 키 파일 없이 Workload Identity로 접속하며,

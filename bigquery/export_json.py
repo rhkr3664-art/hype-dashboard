@@ -1,5 +1,5 @@
 """mart 테이블을 읽어 대시보드용 data.json을 만든다.
-사용: python bigquery/export_json.py            → dashboard/data.json
+사용: python bigquery/export_json.py            → docs/data.json (GitHub Pages가 docs 폴더를 공개)
       python bigquery/export_json.py 경로.json
 KPI 카드 기간은 노트북과 같은 7/25~8/10 (A/B 테스트 전 기준 기간). 비율은 분자·분모 합으로 계산한다."""
 import sys, json, pathlib, datetime as dt
@@ -7,7 +7,7 @@ from google.cloud import bigquery
 sys.stdout.reconfigure(encoding='utf-8')
 P = 'swift-implement-513705-i7'
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-OUT = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / 'dashboard' / 'data.json'
+OUT = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / 'docs' / 'data.json'
 KPI_START, KPI_END = '2023-07-25', '2023-08-10'
 c = bigquery.Client(project=P)
 
