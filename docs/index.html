@@ -8,103 +8,145 @@
 <style>
 :root {
   color-scheme: light;
-  --page: #f9f9f7;
-  --surface: #fcfcfb;
+  --page: #f4f3f8;
+  --surface: #ffffff;
   --ink: #0b0b0b;
   --ink-2: #52514e;
   --muted: #898781;
-  --grid: #e1e0d9;
+  --grid: #e8e7e1;
   --axis: #c3c2b7;
-  --border: rgba(11,11,11,0.10);
-  --series-1: #2a78d6;
-  --series-1-wash: rgba(42,120,214,0.10);
-  --track: #cde2fb;
+  --border: rgba(11,11,11,0.07);
+  --shadow: 0 1px 2px rgba(20,18,50,0.04), 0 6px 20px rgba(20,18,50,0.06);
   --chip: #f0efec;
+  /* 섹션 색 (validate_palette.js all-pairs 통과: blue / orange / aqua) */
+  --blue: #2a78d6;   --blue-wash: rgba(42,120,214,0.10);  --blue-soft: #e6f0fc;
+  --orange: #eb6834; --orange-wash: rgba(235,104,52,0.10); --orange-soft: #fdeee6;
+  --aqua: #1baf7a;   --aqua-wash: rgba(27,175,122,0.10);   --aqua-soft: #e3f6ee;
+  --hero-from: #1b1650; --hero-mid: #3a2d9c; --hero-to: #7a3fb8;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
     --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
-    --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
-    --series-1: #3987e5; --series-1-wash: rgba(57,135,229,0.14); --track: #184f95; --chip: #2c2c2a;
+    --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.08); --shadow: none; --chip: #2c2c2a;
+    --blue: #3987e5; --blue-wash: rgba(57,135,229,0.16); --blue-soft: rgba(57,135,229,0.16);
+    --orange: #d95926; --orange-wash: rgba(217,89,38,0.16); --orange-soft: rgba(217,89,38,0.18);
+    --aqua: #199e70; --aqua-wash: rgba(25,158,112,0.16); --aqua-soft: rgba(25,158,112,0.18);
+    --hero-from: #120f38; --hero-mid: #2a2075; --hero-to: #55308a;
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
   --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
-  --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
-  --series-1: #3987e5; --series-1-wash: rgba(57,135,229,0.14); --track: #184f95; --chip: #2c2c2a;
+  --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.08); --shadow: none; --chip: #2c2c2a;
+  --blue: #3987e5; --blue-wash: rgba(57,135,229,0.16); --blue-soft: rgba(57,135,229,0.16);
+  --orange: #d95926; --orange-wash: rgba(217,89,38,0.16); --orange-soft: rgba(217,89,38,0.18);
+  --aqua: #199e70; --aqua-wash: rgba(25,158,112,0.16); --aqua-soft: rgba(25,158,112,0.18);
+  --hero-from: #120f38; --hero-mid: #2a2075; --hero-to: #55308a;
 }
 * { box-sizing: border-box; }
 body {
   margin: 0; background: var(--page); color: var(--ink);
   font: 15px/1.5 system-ui, -apple-system, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
 }
-.wrap { max-width: 1120px; margin: 0 auto; padding: 32px 16px 64px; }
-header h1 { font-size: 24px; margin: 0 0 4px; font-weight: 650; letter-spacing: -0.01em; }
-header p { margin: 0; color: var(--ink-2); font-size: 14px; }
-.meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-.chip { background: var(--chip); color: var(--ink-2); border-radius: 999px; padding: 2px 10px; font-size: 12.5px; }
-h2 { font-size: 17px; margin: 40px 0 4px; font-weight: 650; }
-.lede { color: var(--ink-2); margin: 0 0 14px; font-size: 14px; }
-.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 18px 14px; }
-.card h3 { font-size: 15px; margin: 0; font-weight: 600; }
-.card .sub { color: var(--muted); font-size: 12.5px; margin: 2px 0 10px; }
-.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
 
-/* hero + tiles */
-.top { display: grid; grid-template-columns: minmax(260px, 1fr) 2fr; gap: 16px; margin-top: 24px; }
-@media (max-width: 760px) { .top { grid-template-columns: 1fr; } }
-.hero .label { color: var(--ink-2); font-size: 14px; }
-.hero .value { font-size: 56px; font-weight: 650; line-height: 1.1; margin: 6px 0 4px; letter-spacing: -0.02em; }
-.hero .frac { color: var(--muted); font-size: 13px; }
-.hero .why { margin-top: 14px; font-size: 13.5px; color: var(--ink-2); border-top: 1px solid var(--grid); padding-top: 12px; }
-.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
-.tile { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
-.tile .label { font-size: 13px; color: var(--ink-2); min-height: 2.6em; }
-.tile .value { font-size: 26px; font-weight: 620; margin-top: 4px; }
-.tile .frac { font-size: 12px; color: var(--muted); }
-.tag { display: inline-block; font-size: 11px; color: var(--ink-2); background: var(--chip); border-radius: 4px; padding: 0 6px; margin-left: 4px; vertical-align: 2px; }
+/* ---------- header band ---------- */
+.band {
+  background: radial-gradient(1200px 400px at 85% -10%, rgba(255,140,190,0.35), transparent 60%),
+              linear-gradient(120deg, var(--hero-from), var(--hero-mid) 55%, var(--hero-to));
+  color: #fff; padding: 28px 0 32px;
+}
+.brand { display: flex; align-items: center; gap: 10px; }
+.logo { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, #ff8ac2, #ffb36b);
+  display: grid; place-items: center; font-weight: 800; color: #1b1650; font-size: 17px; }
+.band h1 { font-size: 22px; margin: 0; font-weight: 700; letter-spacing: -0.01em; }
+.band .desc { margin: 6px 0 0; color: rgba(255,255,255,0.78); font-size: 14px; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.meta span { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.88); border-radius: 999px; padding: 2px 10px; font-size: 12.5px; }
+.kpis { display: grid; grid-template-columns: 1.3fr repeat(3, 1fr); gap: 14px; margin-top: 24px; }
+@media (max-width: 860px) { .kpis { grid-template-columns: 1fr 1fr; } .kpis .hero { grid-column: 1 / -1; } }
+.kpi { background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.16); border-radius: 16px; padding: 16px 18px; backdrop-filter: blur(4px); }
+.kpi .label { font-size: 13px; color: rgba(255,255,255,0.80); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.kpi .value { font-size: 32px; font-weight: 700; margin-top: 6px; line-height: 1.1; letter-spacing: -0.01em; }
+.kpi .frac { font-size: 12px; color: rgba(255,255,255,0.62); margin-top: 2px; }
+.kpi .pill { font-size: 11px; font-weight: 600; border-radius: 999px; padding: 0 8px; background: rgba(255,255,255,0.18); color: #fff; }
+.kpi.hero { background: #fff; color: #0b0b0b; border: 0; }
+.kpi.hero .label { color: #52514e; }
+.kpi.hero .value { font-size: 56px; color: #1b1650; }
+.kpi.hero .frac { color: #898781; }
+.kpi.hero .why { font-size: 13px; color: #52514e; margin-top: 10px; }
+.kpi .bar { height: 6px; border-radius: 999px; background: rgba(255,255,255,0.18); margin-top: 10px; overflow: hidden; }
+.kpi .bar i { display: block; height: 100%; border-radius: 999px; background: #fff; }
+.kpi.hero .bar { background: #ece9f8; }
+.kpi.hero .bar i { background: #3a2d9c; }
+
+/* ---------- sections ---------- */
+section { margin-top: 40px; }
+.sec-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.sec-head .tag { font-size: 12px; font-weight: 700; border-radius: 999px; padding: 2px 10px; }
+.sec-head h2 { font-size: 19px; margin: 0; font-weight: 700; }
+.lede { color: var(--ink-2); margin: 4px 0 14px; font-size: 14px; }
+.t-blue { background: var(--blue-soft); color: var(--ink); }
+.t-orange { background: var(--orange-soft); color: var(--ink); }
+.t-aqua { background: var(--aqua-soft); color: var(--ink); }
+.t-chip { background: var(--chip); color: var(--ink-2); }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 18px 18px 14px; box-shadow: var(--shadow); position: relative; overflow: hidden; }
+.card::before { content: ""; position: absolute; left: 0; top: 0; right: 0; height: 3px; background: var(--accent, transparent); }
+.c-blue { --accent: var(--blue); } .c-orange { --accent: var(--orange); } .c-aqua { --accent: var(--aqua); }
+.card-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.card h3 { font-size: 15px; margin: 0; font-weight: 650; }
+.card .sub { color: var(--muted); font-size: 12.5px; margin: 2px 0 10px; }
+.headline { text-align: right; white-space: nowrap; }
+.headline b { display: block; font-size: 24px; font-weight: 700; line-height: 1.1; }
+.headline span { font-size: 11.5px; color: var(--muted); }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+.num { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 6px; font-size: 12px; font-weight: 700; color: #fff; margin-right: 6px; vertical-align: 1px; }
+.n-blue { background: var(--blue); } .n-orange { background: var(--orange); } .n-aqua { background: var(--aqua); }
 
 /* charts */
 .chart { position: relative; width: 100%; }
 .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
 .chart text { font-size: 11.5px; fill: var(--muted); font-variant-numeric: tabular-nums; }
-.chart .endlabel { fill: var(--ink); font-weight: 600; font-size: 12px; }
+.chart .endlabel { fill: var(--ink); font-weight: 650; font-size: 12px; }
 .chart .hit { fill: transparent; cursor: crosshair; }
 .chart .col:hover, .chart .col.on { opacity: 0.8; }
 .tip {
   position: fixed; pointer-events: none; z-index: 10; background: var(--surface); color: var(--ink);
-  border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 12.5px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.12); opacity: 0; transition: opacity .08s; max-width: 240px;
+  border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; font-size: 12.5px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.14); opacity: 0; transition: opacity .08s; max-width: 240px;
 }
-.tip .v { font-weight: 650; font-size: 14px; }
+.tip .v { font-weight: 700; font-size: 14px; }
 .tip .k { color: var(--ink-2); }
-.tip .key { display: inline-block; width: 12px; height: 2px; background: var(--series-1); vertical-align: middle; margin-right: 6px; }
+.tip .key { display: inline-block; width: 12px; height: 2px; vertical-align: middle; margin-right: 6px; }
 
 /* funnel */
 .funnel { display: grid; gap: 8px; }
-.frow { display: grid; grid-template-columns: 110px 1fr 84px; gap: 10px; align-items: center; }
-.frow .name { font-size: 13.5px; color: var(--ink); }
-.frow .bar { height: 22px; position: relative; }
-.frow .fill { height: 100%; background: var(--series-1); border-radius: 0 4px 4px 0; min-width: 2px; }
-.frow .num { font-size: 13px; text-align: right; font-variant-numeric: tabular-nums; }
+.frow { display: grid; grid-template-columns: 104px 1fr 72px; gap: 10px; align-items: center; }
+.frow .name { font-size: 13.5px; }
+.frow .bar { height: 22px; }
+.frow .fill { height: 100%; background: var(--blue); border-radius: 0 4px 4px 0; min-width: 2px; }
+.frow .val { font-size: 13px; text-align: right; font-variant-numeric: tabular-nums; }
 .frow:hover .fill, .frow:focus .fill { opacity: 0.8; }
-.frow:focus { outline: 2px solid var(--series-1); outline-offset: 2px; border-radius: 4px; }
-.conv { grid-column: 2 / 4; font-size: 12px; color: var(--muted); padding-left: 2px; margin: -4px 0 -2px; }
+.frow:focus { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: 4px; }
+.conv { grid-column: 2 / 4; font-size: 12px; color: var(--muted); margin: -4px 0 -2px; }
 .conv b { color: var(--ink); }
-.conv .worst { background: var(--chip); color: var(--ink); border-radius: 4px; padding: 0 6px; margin-left: 6px; }
-.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 12px; }
-.seg button { border: 0; background: transparent; color: var(--ink-2); padding: 5px 12px; font: inherit; font-size: 13px; cursor: pointer; }
-.seg button[aria-pressed="true"] { background: var(--chip); color: var(--ink); font-weight: 600; }
+.conv .worst { background: var(--ink); color: var(--surface); border-radius: 4px; padding: 0 6px; margin-left: 6px; font-weight: 600; }
+.seg { display: inline-flex; background: var(--chip); border-radius: 10px; padding: 3px; margin-bottom: 12px; }
+.seg button { border: 0; background: transparent; color: var(--ink-2); padding: 4px 12px; font: inherit; font-size: 13px; cursor: pointer; border-radius: 8px; }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); font-weight: 650; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
 
 /* compare bars (aha) */
-.cmp { display: grid; gap: 10px; margin-top: 6px; }
-.cmp .row { display: grid; grid-template-columns: 96px 1fr 56px; gap: 10px; align-items: center; font-size: 13px; }
-.cmp .track { height: 14px; }
-.cmp .fill { height: 100%; background: var(--series-1); border-radius: 0 4px 4px 0; }
+.cmp { display: grid; gap: 8px; margin-top: 4px; }
+.cmp .row { display: grid; grid-template-columns: 56px 1fr 52px; gap: 10px; align-items: center; font-size: 13px; }
+.cmp .track { height: 12px; }
+.cmp .fill { height: 100%; background: var(--orange); border-radius: 0 4px 4px 0; }
 .cmp .row.dim .fill { background: var(--axis); }
-.cmp .val { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+.cmp .v { text-align: right; font-weight: 650; font-variant-numeric: tabular-nums; }
+.mini { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+.mini > div { background: var(--aqua-soft); border-radius: 12px; padding: 12px 14px; }
+.mini b { display: block; font-size: 22px; font-weight: 700; }
+.mini span { font-size: 12.5px; color: var(--ink-2); }
 
 details { margin-top: 10px; font-size: 13px; }
 summary { color: var(--ink-2); cursor: pointer; }
@@ -115,24 +157,23 @@ th { color: var(--ink-2); font-weight: 600; }
 .tablewrap { overflow-x: auto; }
 
 .guard { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
-.guard .card { border-style: dashed; }
-.guard .state { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink-2); margin-top: 8px; }
-.guard .state::before { content: "⏸"; }
-footer { margin-top: 48px; color: var(--muted); font-size: 12.5px; }
-footer a { color: var(--ink-2); }
-.err { padding: 24px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+.guard .card { border: 1px dashed var(--axis); box-shadow: none; background: transparent; }
+.guard .state { font-size: 12.5px; color: var(--ink-2); margin-top: 6px; }
+footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
+.err { padding: 24px; border-radius: 12px; background: var(--surface); }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <h1>HYPE 서비스 현황</h1>
-    <p>앱을 켠 사람이 투표를 시작하고 완료까지 이어지는지, 신규 가입자가 두 번째 완료(아하모먼트)에 도달하는지 봅니다.</p>
+<div class="band">
+  <div class="wrap">
+    <div class="brand"><div class="logo" aria-hidden="true">H</div><h1>HYPE 서비스 현황</h1></div>
+    <p class="desc">앱을 켠 사람이 투표를 시작해 완료까지 가는지, 신규 가입자가 두 번째 완료(아하모먼트)에 도달하는지 봅니다.</p>
     <div class="meta" id="meta"></div>
-  </header>
-
+    <div class="kpis" id="kpis"></div>
+  </div>
+</div>
+<div class="wrap">
   <div id="app"><p class="lede" style="margin-top:24px">데이터를 불러오는 중…</p></div>
-
   <footer>
     데이터: BigQuery <code>mart</code> → <code>data.json</code> (GitHub Actions 매일 갱신, 노트북 결과와 23개 항목 일치 검증 후 반영).
     비율은 날짜별 분자·분모 합으로 계산하며 일별 비율의 단순 평균이 아닙니다.
@@ -156,14 +197,17 @@ footer a { color: var(--ink-2); }
   const nf = new Intl.NumberFormat('ko-KR');
   const pct = (v, d = 1) => v == null ? '–' : (v * 100).toFixed(d) + '%';
   const md = iso => { const [, m, d] = iso.split('-'); return `${+m}/${+d}`; };
+  const COLOR = { blue: ['var(--blue)', 'var(--blue-wash)'], orange: ['var(--orange)', 'var(--orange-wash)'], aqua: ['var(--aqua)', 'var(--aqua-wash)'] };
 
   // ---------- tooltip ----------
   const tip = $('#tip');
-  function showTip(evt, rows) {
-    tip.replaceChildren(...rows.map(([v, k, key]) => el('div', {},
-      key ? el('span', { class: 'key' }) : null, el('span', { class: 'v', text: v }), ' ', el('span', { class: 'k', text: k }))));
-    const x = evt.clientX ?? evt.target.getBoundingClientRect().right;
-    const y = evt.clientY ?? evt.target.getBoundingClientRect().top;
+  function showTip(evt, rows, color = 'var(--blue)') {
+    tip.replaceChildren(...rows.map(([v, k, key]) => {
+      const kk = key ? el('span', { class: 'key' }) : null; if (kk) kk.style.background = color;
+      return el('div', {}, kk, el('span', { class: 'v', text: v }), ' ', el('span', { class: 'k', text: k }));
+    }));
+    const r = evt.target.getBoundingClientRect();
+    const x = evt.clientX ?? r.right, y = evt.clientY ?? r.top;
     tip.style.opacity = 1;
     const w = tip.offsetWidth, h = tip.offsetHeight;
     tip.style.left = Math.min(window.innerWidth - w - 8, x + 14) + 'px';
@@ -174,12 +218,13 @@ footer a { color: var(--ink-2); }
   // ---------- line chart (single series, crosshair) ----------
   function niceMax(v) {
     const p = Math.pow(10, Math.floor(Math.log10(v))); const m = v / p;
-    return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p;
+    return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 4 ? 4 : m <= 8 ? 8 : 10) * p;
   }
-  function lineChart(host, pts, { fmt, tipLabel, yMax, extra }) {
+  function lineChart(host, pts, { fmt, tipLabel, yMax, extra, color = 'blue' }) {
+    const [stroke, wash] = COLOR[color];
     const draw = () => {
       host.replaceChildren();
-      const W = Math.max(280, host.clientWidth), H = 220, m = { l: 44, r: 52, t: 10, b: 26 };
+      const W = Math.max(280, host.clientWidth), H = 210, m = { l: 40, r: 52, t: 10, b: 26 };
       const iw = W - m.l - m.r, ih = H - m.t - m.b;
       const dataMax = Math.max(...pts.map(p => p.y));
       const max = yMax && yMax >= dataMax ? yMax : niceMax(dataMax * 1.15);
@@ -197,13 +242,13 @@ footer a { color: var(--ink-2); }
         const t = s('text', { x: X(i), y: H - 6, 'text-anchor': 'middle' }); t.textContent = md(p.x); svg.append(t);
       });
       const d = pts.map((p, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)},${Y(p.y).toFixed(1)}`).join('');
-      svg.append(s('path', { d: `${d}L${X(pts.length - 1)},${Y(0)}L${X(0)},${Y(0)}Z`, fill: 'var(--series-1-wash)' }));
-      svg.append(s('path', { d, fill: 'none', stroke: 'var(--series-1)', 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
+      svg.append(s('path', { d: `${d}L${X(pts.length - 1)},${Y(0)}L${X(0)},${Y(0)}Z`, fill: wash }));
+      svg.append(s('path', { d, fill: 'none', stroke, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
       const last = pts.length - 1;
-      svg.append(s('circle', { cx: X(last), cy: Y(pts[last].y), r: 4, fill: 'var(--series-1)', stroke: 'var(--surface)', 'stroke-width': 2 }));
+      svg.append(s('circle', { cx: X(last), cy: Y(pts[last].y), r: 4, fill: stroke, stroke: 'var(--surface)', 'stroke-width': 2 }));
       const end = s('text', { x: X(last) + 8, y: Y(pts[last].y) + 4, class: 'endlabel' }); end.textContent = fmt(pts[last].y); svg.append(end);
       const cross = s('line', { y1: m.t, y2: m.t + ih, stroke: 'var(--axis)', 'stroke-width': 1, opacity: 0 });
-      const dot = s('circle', { r: 4, fill: 'var(--series-1)', stroke: 'var(--surface)', 'stroke-width': 2, opacity: 0 });
+      const dot = s('circle', { r: 4, fill: stroke, stroke: 'var(--surface)', 'stroke-width': 2, opacity: 0 });
       svg.append(cross, dot);
       const hit = s('rect', { x: m.l, y: m.t, width: iw, height: ih, class: 'hit', tabindex: 0 });
       const at = i => {
@@ -215,13 +260,13 @@ footer a { color: var(--ink-2); }
       hit.addEventListener('pointermove', e => {
         const r = svg.getBoundingClientRect(); const px = (e.clientX - r.left) * (W / r.width);
         const i = Math.max(0, Math.min(last, Math.round(((px - m.l) / iw) * last)));
-        showTip(e, at(i));
+        showTip(e, at(i), stroke);
       });
       let ki = last;
-      hit.addEventListener('focus', e => showTip(e, at(ki)));
+      hit.addEventListener('focus', e => showTip(e, at(ki), stroke));
       hit.addEventListener('keydown', e => {
         if (e.key === 'ArrowRight') ki = Math.min(last, ki + 1); else if (e.key === 'ArrowLeft') ki = Math.max(0, ki - 1); else return;
-        e.preventDefault(); showTip(e, at(ki));
+        e.preventDefault(); showTip(e, at(ki), stroke);
       });
       const off = () => { hideTip(); cross.setAttribute('opacity', 0); dot.setAttribute('opacity', 0); };
       hit.addEventListener('pointerleave', off); hit.addEventListener('blur', off);
@@ -233,28 +278,28 @@ footer a { color: var(--ink-2); }
   }
 
   // ---------- column chart (aha by signup day) ----------
-  function columnChart(host, rows) {
+  function columnChart(host, rows, avg) {
     const draw = () => {
       host.replaceChildren();
-      const W = Math.max(280, host.clientWidth), H = 230, m = { l: 44, r: 8, t: 18, b: 40 };
+      const W = Math.max(280, host.clientWidth), H = 220, m = { l: 40, r: 8, t: 12, b: 40 };
       const iw = W - m.l - m.r, ih = H - m.t - m.b;
-      const max = 1, Y = v => m.t + ih - (v / max) * ih;
+      const Y = v => m.t + ih - (v / 0.8) * ih;
       const band = iw / rows.length, bw = Math.min(24, band * 0.6);
       const svg = s('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': '가입 날짜별 아하모먼트 도달률' });
       for (let k = 0; k <= 4; k++) {
-        const v = k / 4, y = Y(v);
+        const v = k * 0.2, y = Y(v);
         svg.append(s('line', { x1: m.l, x2: W - m.r, y1: y, y2: y, stroke: k === 0 ? 'var(--axis)' : 'var(--grid)', 'stroke-width': 1 }));
-        const t = s('text', { x: m.l - 8, y: y + 4, 'text-anchor': 'end' }); t.textContent = (v * 100) + '%'; svg.append(t);
+        const t = s('text', { x: m.l - 8, y: y + 4, 'text-anchor': 'end' }); t.textContent = Math.round(v * 100) + '%'; svg.append(t);
       }
       rows.forEach((r, i) => {
         const cx = m.l + band * i + band / 2, x = cx - bw / 2, y = Y(r.aha_rate), h = Y(0) - y, rad = Math.min(4, h);
         const path = s('path', {
-          class: 'col', fill: 'var(--series-1)', tabindex: 0,
+          class: 'col', fill: 'var(--orange)', tabindex: 0,
           d: `M${x},${Y(0)}V${y + rad}Q${x},${y} ${x + rad},${y}H${x + bw - rad}Q${x + bw},${y} ${x + bw},${y + rad}V${Y(0)}Z`,
         });
         const rowsTip = () => [[pct(r.aha_rate), '도달률', true], [`${r.n_aha} / ${r.n_new_users}명`, '도달 / 신규 가입'], [md(r.signup_day) + ' 가입', '']];
         const hitR = s('rect', { x: m.l + band * i, y: m.t, width: band, height: ih, fill: 'transparent' });
-        const on = e => { path.classList.add('on'); showTip(e, rowsTip()); };
+        const on = e => { path.classList.add('on'); showTip(e, rowsTip(), 'var(--orange)'); };
         const off = () => { path.classList.remove('on'); hideTip(); };
         for (const n of [hitR, path]) { n.addEventListener('pointermove', on); n.addEventListener('pointerleave', off); }
         path.addEventListener('focus', on); path.addEventListener('blur', off);
@@ -262,6 +307,10 @@ footer a { color: var(--ink-2); }
         const t = s('text', { x: cx, y: H - 22, 'text-anchor': 'middle' }); t.textContent = md(r.signup_day); svg.append(t);
         const n = s('text', { x: cx, y: H - 6, 'text-anchor': 'middle' }); n.textContent = `n=${r.n_new_users}`; svg.append(n);
       });
+      // 전체 평균 기준선
+      const ya = Y(avg);
+      svg.append(s('line', { x1: m.l, x2: W - m.r, y1: ya, y2: ya, stroke: 'var(--ink-2)', 'stroke-width': 1 }));
+      const at = s('text', { x: W - m.r, y: ya - 6, 'text-anchor': 'end', class: 'endlabel' }); at.textContent = `전체 ${pct(avg)}`; svg.append(at);
       host.append(svg);
     };
     draw();
@@ -274,74 +323,70 @@ footer a { color: var(--ink-2); }
         el('thead', {}, el('tr', {}, head.map(h => el('th', { text: h })))),
         el('tbody', {}, rows.map(r => el('tr', {}, r.map(c => el('td', { text: c }))))))));
   }
+  const secHead = (tagClass, tagText, title, lede) => [
+    el('div', { class: 'sec-head' }, el('span', { class: 'tag ' + tagClass, text: tagText }), el('h2', { text: title })),
+    el('p', { class: 'lede', text: lede })];
+  const cardHead = (n, color, title, sub, value, valueLabel) => el('div', { class: 'card-head' },
+    el('div', {}, el('h3', {}, n ? el('span', { class: 'num n-' + color, text: n }) : null, title), el('div', { class: 'sub', text: sub })),
+    value ? el('div', { class: 'headline' }, el('b', { text: value }), el('span', { text: valueLabel })) : null);
 
   // ---------- page ----------
   function render(D) {
     const K = D.kpi, app = $('#app');
     app.replaceChildren();
     $('#meta').append(
-      el('span', { class: 'chip', text: `KPI 기간 ${md(D.meta.kpi_period[0])}~${md(D.meta.kpi_period[1])} (A/B 테스트 전 기준값)` }),
-      el('span', { class: 'chip', text: `갱신 ${D.meta.generated_at.replace('T', ' ').slice(0, 16)} KST` }));
+      el('span', { text: `KPI 기간 ${md(D.meta.kpi_period[0])}~${md(D.meta.kpi_period[1])} · A/B 테스트 전 기준값` }),
+      el('span', { text: `갱신 ${D.meta.generated_at.replace('T', ' ').slice(0, 16)} KST` }));
 
-    const frac = k => k.numerator != null ? `${nf.format(k.numerator)} / ${nf.format(k.denominator)}` : '';
-    const val = k => k.unit === '%' ? `${k.value.toFixed(1)}%` : `${nf.format(Math.round(k.value))}${k.unit}`;
-    const tile = (k, tag) => el('div', { class: 'tile' },
-      el('div', { class: 'label' }, k.label, tag ? el('span', { class: 'tag', text: tag }) : null),
-      el('div', { class: 'value', text: val(k) }), el('div', { class: 'frac', text: frac(k) }));
-
-    const basic = D.funnel.basic, worst = Math.round(K.launch_to_start.value);
-    app.append(el('section', { class: 'top' },
-      el('div', { class: 'card hero' },
-        el('div', { class: 'label', text: '핵심 지표 · ' + K.launch_to_complete.label }),
-        el('div', { class: 'value', text: K.launch_to_complete.value.toFixed(1) + '%' }),
+    const frac = k => `${nf.format(k.numerator)} / ${nf.format(k.denominator)}`;
+    const bar = v => { const b = el('div', { class: 'bar' }); const i = el('i'); i.style.width = v + '%'; b.append(i); return b; };
+    const kpi = (k, pill) => el('div', { class: 'kpi' },
+      el('div', { class: 'label' }, k.label, pill ? el('span', { class: 'pill', text: pill }) : null),
+      el('div', { class: 'value', text: k.value.toFixed(1) + '%' }), bar(k.value), el('div', { class: 'frac', text: frac(k) }));
+    const stopN = (100 - K.launch_to_start.value).toFixed(1);
+    $('#kpis').append(
+      el('div', { class: 'kpi hero' },
+        el('div', { class: 'label', text: '핵심 · ' + K.launch_to_complete.label }),
+        el('div', { class: 'value', text: K.launch_to_complete.value.toFixed(1) + '%' }), bar(K.launch_to_complete.value),
         el('div', { class: 'frac', text: frac(K.launch_to_complete) + ' 사용자×날짜' }),
-        el('div', { class: 'why', text: `앱을 켠 날 10번 중 약 ${(100 - worst) / 10 | 0}번은 투표를 시작하지 않습니다. 가장 큰 이탈은 실행 → 시작(${K.launch_to_start.value.toFixed(1)}%) 구간입니다.` })),
-      el('div', { class: 'tiles' },
-        tile(K.launch_to_start, '병목'), tile(K.open_start_10m, '개선 화면'), tile(K.aha_rate, '아하'),
-        tile(K.recomplete_7d), tile(K.next_week_return), tile(K.d1_return),
-        tile(K.visit_dau_avg), tile(K.complete_dau_avg))));
+        el('div', { class: 'why', text: `앱을 켠 날의 ${stopN}%는 투표를 시작하지 않아요. 가장 큰 이탈 구간입니다.` })),
+      kpi(K.launch_to_start, '가장 큰 병목'), kpi(K.open_start_10m, 'BEST 1'), kpi(K.aha_rate, '아하 · BEST 3'));
 
-    // ① 완료율 추이 + ② 퍼널
     const daily = D.daily;
+    const pctFmt = (v, axis) => axis ? Math.round(v * 100) + '%' : pct(v);
+
+    // ===== 참여 =====
     const fd = daily.filter(r => r.launch_to_complete != null);
-    const c1 = el('div', { class: 'chart' });
-    const c2 = el('div', { class: 'funnel' });
-    app.append(el('h2', { text: '방문이 완료까지 이어지는가' }),
-      el('p', { class: 'lede', text: '단위는 사용자×날짜입니다. 같은 날 앱 실행보다 늦은 시작·반응·완료만 이어진 것으로 셉니다.' }),
+    const od = daily.filter(r => r.start_10m_rate != null);
+    const c1 = el('div', { class: 'chart' }), c2 = el('div', { class: 'funnel' }), c3 = el('div', { class: 'chart' });
+    const seg = el('div', { class: 'seg', role: 'group', 'aria-label': '퍼널 선택' });
+    [['basic', '기본 퍼널'], ['extended', '받은 투표 확인 경로']].forEach(([k, label], i) => {
+      const b = el('button', { type: 'button', 'aria-pressed': String(i === 0), text: label });
+      b.addEventListener('click', () => { seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); funnel(c2, D.funnel[k]); });
+      seg.append(b);
+    });
+    app.append(el('section', {}, ...secHead('t-blue', '참여', '방문이 투표로 이어지는가', '단위는 사용자×날짜. 같은 날 앱 실행보다 늦은 시작·반응·완료만 이어진 것으로 셉니다.'),
       el('div', { class: 'grid2' },
-        el('div', { class: 'card' }, el('h3', { text: '① 앱 실행 → 세트 완료율 추이' }),
-          el('div', { class: 'sub', text: '질문 탭 기록이 안정된 7/25부터' }), c1,
+        el('div', { class: 'card c-blue' }, cardHead('1', 'blue', '앱 실행 → 세트 완료율 추이', '질문 탭 기록이 안정된 7/25부터'), c1,
           tableView(['날짜', '앱 실행', '투표 시작', '세트 완료', '실행→시작', '실행→완료'],
             fd.map(r => [md(r.date), nf.format(r.n_launch), nf.format(r.n_start), nf.format(r.n_complete), pct(r.launch_to_start), pct(r.launch_to_complete)]))),
-        el('div', { class: 'card' }, el('h3', { text: '② 실행 → 시작 퍼널' }),
-          el('div', { class: 'sub', text: '확장 퍼널은 받은 투표 확인과 질문 탭을 거친 경로만 셉니다' }),
-          (() => {
-            const seg = el('div', { class: 'seg', role: 'group', 'aria-label': '퍼널 선택' });
-            [['basic', '기본 퍼널'], ['extended', '받은 투표 확인 경로']].forEach(([k, label], i) => {
-              const b = el('button', { type: 'button', 'aria-pressed': String(i === 0), text: label });
-              b.addEventListener('click', () => { seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); funnel(c2, D.funnel[k]); });
-              seg.append(b);
-            });
-            return seg;
-          })(), c2)));
+        el('div', { class: 'card c-blue' }, cardHead('2', 'blue', '어디서 끊기나: 퍼널', '받은 투표 확인 경로는 확인·질문 탭을 거친 경우만'), seg, c2)),
+      el('div', { class: 'card c-blue', style: 'margin-top:16px' },
+        cardHead('3', 'blue', '받은 투표 확인 → 10분 내 투표 시작률', `날짜별 그날 첫 확인 기준 (상단 ${K.open_start_10m.value.toFixed(1)}%는 사용자별 첫 확인 기준)`,
+          K.open_start_10m.value.toFixed(1) + '%', '사용자 기준'), c3,
+        tableView(['날짜', '확인한 사용자', '10분 내 시작', '시작률'], od.map(r => [md(r.date), nf.format(r.n_open_users), nf.format(r.n_start_10m), pct(r.start_10m_rate)])))));
     lineChart(c1, fd.map(r => ({ x: r.date, y: r.launch_to_complete, r })), {
-      fmt: (v, axis) => axis ? Math.round(v * 100) + '%' : pct(v), tipLabel: '실행 → 완료',
-      yMax: 0.2, extra: p => [[pct(p.r.launch_to_start), '실행 → 시작'], [nf.format(p.r.n_launch), '앱 실행']],
+      fmt: pctFmt, tipLabel: '실행 → 완료', yMax: 0.2, extra: p => [[pct(p.r.launch_to_start), '실행 → 시작'], [nf.format(p.r.n_launch), '앱 실행']],
     });
     function funnel(host, steps) {
       host.replaceChildren();
       const n0 = steps[0].n;
       let wi = 1; for (let i = 2; i < steps.length; i++) if (steps[i].n / steps[i - 1].n < steps[wi].n / steps[wi - 1].n) wi = i;
       steps.forEach((st, i) => {
-        if (i) {
-          const c = st.n / steps[i - 1].n;
-          host.append(el('div', { class: 'frow' }, el('span'), el('div', { class: 'conv' },
-            '↓ ', el('b', { text: pct(c) }), ' 이어짐', i === wi ? el('span', { class: 'worst', text: '가장 큰 감소' }) : null)));
-        }
-        const row = el('div', { class: 'frow', tabindex: 0 },
-          el('div', { class: 'name', text: st.step }),
-          el('div', { class: 'bar' }, (() => { const f = el('div', { class: 'fill' }); f.style.width = (st.n / n0 * 100) + '%'; return f; })()),
-          el('div', { class: 'num', text: nf.format(st.n) }));
+        if (i) host.append(el('div', { class: 'frow' }, el('span'), el('div', { class: 'conv' },
+          '↓ ', el('b', { text: pct(st.n / steps[i - 1].n) }), ' 이어짐', i === wi ? el('span', { class: 'worst', text: '가장 큰 감소' }) : null)));
+        const f = el('div', { class: 'fill' }); f.style.width = (st.n / n0 * 100) + '%';
+        const row = el('div', { class: 'frow', tabindex: 0 }, el('div', { class: 'name', text: st.step }), el('div', { class: 'bar' }, f), el('div', { class: 'val', text: nf.format(st.n) }));
         const rows = () => [[nf.format(st.n), st.step, true], [pct(st.n / n0), '앱 실행 대비'], ...(i ? [[pct(st.n / steps[i - 1].n), '전 단계 대비']] : [])];
         row.addEventListener('pointermove', e => showTip(e, rows()));
         row.addEventListener('focus', e => showTip(e, rows()));
@@ -350,64 +395,53 @@ footer a { color: var(--ink-2); }
       });
     }
     funnel(c2, D.funnel.basic);
-
-    // ③ 받은 투표 확인 → 10분 내 시작
-    const od = daily.filter(r => r.start_10m_rate != null);
-    const c3 = el('div', { class: 'chart' });
-    app.append(el('h2', { text: '받은 투표 확인이 투표 시작으로 이어지는가' }),
-      el('p', { class: 'lede', text: '개선안 BEST 1(받은 투표 화면의 시작 버튼)이 바꾸려는 구간입니다.' }),
-      el('div', { class: 'card' }, el('h3', { text: '③ 받은 투표 확인 → 10분 내 투표 시작률' }),
-        el('div', { class: 'sub', text: `날짜별 그날 첫 확인 기준. KPI 카드의 ${K.open_start_10m.value.toFixed(1)}%는 사용자별 기간 내 첫 확인 기준이라 일별 값의 평균과 다릅니다` }), c3,
-        tableView(['날짜', '확인한 사용자', '10분 내 시작', '시작률'], od.map(r => [md(r.date), nf.format(r.n_open_users), nf.format(r.n_start_10m), pct(r.start_10m_rate)]))));
     lineChart(c3, od.map(r => ({ x: r.date, y: r.start_10m_rate, r })), {
-      fmt: (v, axis) => axis ? Math.round(v * 100) + '%' : pct(v), tipLabel: '10분 내 시작률', yMax: 0.4,
-      extra: p => [[`${nf.format(p.r.n_start_10m)} / ${nf.format(p.r.n_open_users)}`, '시작 / 확인']],
+      fmt: pctFmt, tipLabel: '10분 내 시작률', yMax: 0.4, extra: p => [[`${nf.format(p.r.n_start_10m)} / ${nf.format(p.r.n_open_users)}`, '시작 / 확인']],
     });
 
-    // ④ 아하 + ⑤ 재완료
+    // ===== 아하 =====
     const A = D.aha, c4 = el('div', { class: 'chart' }), c5 = el('div', { class: 'chart' });
     const rd = daily.filter(r => r.recomplete_7d_rate != null);
     const cmpRow = (label, v, dim) => {
       const f = el('div', { class: 'fill' }); f.style.width = v + '%';
-      return el('div', { class: 'row' + (dim ? ' dim' : '') }, el('span', { text: label }), el('div', { class: 'track' }, f), el('span', { class: 'val', text: v.toFixed(1) + '%' }));
+      return el('div', { class: 'row' + (dim ? ' dim' : '') }, el('span', { text: label }), el('div', { class: 'track' }, f), el('span', { class: 'v', text: v.toFixed(1) + '%' }));
     };
-    app.append(el('h2', { text: '두 번째 완료까지 가는가' }),
-      el('p', { class: 'lede', text: '아하모먼트 = 가입 첫 7일 안에 질문 세트 2회 이상 완료. 개선안 BEST 3(다음 세트 알림)이 겨냥하는 지표입니다.' }),
+    app.append(el('section', {}, ...secHead('t-orange', '아하모먼트', '두 번째 완료까지 가는가', '아하모먼트 = 가입 첫 7일 안에 질문 세트 2회 이상 완료. BEST 3(다음 세트 알림)이 겨냥하는 지표입니다.'),
       el('div', { class: 'grid2' },
-        el('div', { class: 'card' }, el('h3', { text: '④ 가입 날짜별 아하모먼트 도달률' }),
-          el('div', { class: 'sub', text: `7/18~7/27 신규 가입자 ${nf.format(K.aha_rate.denominator)}명. 하루 가입자가 적어 날짜별 값은 흔들림이 큽니다` }), c4,
-          el('div', { class: 'sub', style: 'margin-top:14px', text: '가입 후 8~14일 앱 재방문율' }),
+        el('div', { class: 'card c-orange' },
+          cardHead('4', 'orange', '가입 날짜별 도달률', `7/18~7/27 신규 가입자 ${nf.format(K.aha_rate.denominator)}명 · 날짜별 인원이 적어 흔들림이 큼`, K.aha_rate.value.toFixed(1) + '%', '전체 도달률'), c4,
+          el('div', { class: 'sub', style: 'margin-top:12px', text: '도달 여부별 가입 후 8~14일 재방문율' }),
           el('div', { class: 'cmp' }, cmpRow('도달', A.reached_w2_return), cmpRow('미도달', A.not_reached_w2_return, true)),
           tableView(['가입일', '신규 가입', '도달', '도달률'], A.by_signup_day.map(r => [md(r.signup_day), nf.format(r.n_new_users), nf.format(r.n_aha), pct(r.aha_rate)]))),
-        el('div', { class: 'card' }, el('h3', { text: '⑤ 이후 7일 세트 재완료율 추이' }),
-          el('div', { class: 'sub', text: '그날 완료한 사용자 중 다음 7일 안에 다시 완료한 비율. 7일을 다 볼 수 있는 8/3까지' }), c5,
-          tableView(['날짜', '완료 사용자', '7일 내 재완료', '재완료율'], rd.map(r => [md(r.date), nf.format(r.n_complete_users), nf.format(r.n_recomplete_7d), pct(r.recomplete_7d_rate)])))));
-    columnChart(c4, A.by_signup_day);
+        el('div', { class: 'card c-orange' },
+          cardHead('5', 'orange', '이후 7일 세트 재완료율', '그날 완료한 사용자 중 다음 7일 안에 다시 완료 (8/3까지)', K.recomplete_7d.value.toFixed(1) + '%', '7/25~8/3 전체'), c5,
+          tableView(['날짜', '완료 사용자', '7일 내 재완료', '재완료율'], rd.map(r => [md(r.date), nf.format(r.n_complete_users), nf.format(r.n_recomplete_7d), pct(r.recomplete_7d_rate)]))))));
+    columnChart(c4, A.by_signup_day, K.aha_rate.value / 100);
     lineChart(c5, rd.map(r => ({ x: r.date, y: r.recomplete_7d_rate, r })), {
-      fmt: (v, axis) => axis ? Math.round(v * 100) + '%' : pct(v), tipLabel: '7일 재완료율', yMax: 0.8,
-      extra: p => [[`${nf.format(p.r.n_recomplete_7d)} / ${nf.format(p.r.n_complete_users)}`, '재완료 / 완료']],
+      color: 'orange', fmt: pctFmt, tipLabel: '7일 재완료율', yMax: 0.8, extra: p => [[`${nf.format(p.r.n_recomplete_7d)} / ${nf.format(p.r.n_complete_users)}`, '재완료 / 완료']],
     });
 
-    // DAU
+    // ===== 규모·재방문 =====
     const c6 = el('div', { class: 'chart' }), c7 = el('div', { class: 'chart' });
-    app.append(el('h2', { text: '규모' }),
-      el('p', { class: 'lede', text: '방문자와 완료자는 규모가 달라 축을 나눠 그렸습니다.' }),
-      el('div', { class: 'grid2' },
-        el('div', { class: 'card' }, el('h3', { text: '방문 DAU' }), el('div', { class: 'sub', text: '하루 동안 활동한 고유 사용자' }), c6),
-        el('div', { class: 'card' }, el('h3', { text: '완료 DAU' }), el('div', { class: 'sub', text: '하루 동안 질문 세트를 1번 이상 완료한 고유 사용자' }), c7)),
-      tableView(['날짜', '방문 DAU', '완료 DAU', '방문 대비 완료'], daily.map(r => [md(r.date), nf.format(r.visit_dau), nf.format(r.complete_dau), pct(r.complete_user_rate)])));
     const kfmt = (v, axis) => axis ? (v >= 1000 ? (v / 1000) + 'K' : String(v)) : nf.format(v);
-    lineChart(c6, daily.map(r => ({ x: r.date, y: r.visit_dau, r })), { fmt: kfmt, tipLabel: '방문 DAU', yMax: 40000 });
+    app.append(el('section', {}, ...secHead('t-aqua', '규모·재방문', '얼마나 오고, 다시 오는가', '방문자와 완료자는 규모가 달라 차트를 나눴습니다.'),
+      el('div', { class: 'grid2' },
+        el('div', { class: 'card c-aqua' }, cardHead('', 'aqua', '방문 DAU', '하루 동안 활동한 고유 사용자', nf.format(Math.round(K.visit_dau_avg.value)) + '명', '7/25~ 일평균'), c6),
+        el('div', { class: 'card c-aqua' }, cardHead('', 'aqua', '완료 DAU', '하루 동안 세트를 1번 이상 완료한 고유 사용자', nf.format(Math.round(K.complete_dau_avg.value)) + '명', '7/25~ 일평균'), c7)),
+      el('div', { class: 'mini' },
+        el('div', {}, el('b', { text: K.d1_return.value.toFixed(1) + '%' }), el('span', { text: '다음 날 재방문 (앱 실행일 기준)' })),
+        el('div', {}, el('b', { text: K.next_week_return.value.toFixed(1) + '%' }), el('span', { text: '다음 주 재방문 (7/18주 → 7/25주)' }))),
+      tableView(['날짜', '방문 DAU', '완료 DAU', '방문 대비 완료', 'D1 재방문'], daily.map(r => [md(r.date), nf.format(r.visit_dau), nf.format(r.complete_dau), pct(r.complete_user_rate), pct(r.d1_return_rate)]))));
+    lineChart(c6, daily.map(r => ({ x: r.date, y: r.visit_dau, r })), { color: 'aqua', fmt: kfmt, tipLabel: '방문 DAU', yMax: 40000 });
     lineChart(c7, daily.map(r => ({ x: r.date, y: r.complete_dau, r })), {
-      fmt: kfmt, tipLabel: '완료 DAU', yMax: 8000, extra: p => [[pct(p.r.complete_user_rate), '방문 대비 완료']],
+      color: 'aqua', fmt: kfmt, tipLabel: '완료 DAU', yMax: 8000, extra: p => [[pct(p.r.complete_user_rate), '방문 대비 완료']],
     });
 
-    // ⑥⑦ 가드레일
-    app.append(el('h2', { text: '참여의 질 · 가드레일' }),
-      el('p', { class: 'lede', text: '완료만 늘고 실제 투표는 줄지 않는지 보는 지표입니다. 실제 선택 이벤트와 세트 ID가 로그에 없어 아직 계산하지 않습니다.' }),
+    // ===== 가드레일 =====
+    app.append(el('section', {}, ...secHead('t-chip', '가드레일', '참여의 질', '완료만 늘고 실제 투표는 줄지 않는지 보는 지표입니다. 실제 선택 이벤트와 세트 ID가 로그에 없어 아직 계산하지 않습니다.'),
       el('div', { class: 'guard' },
-        el('div', { class: 'card' }, el('h3', { text: '⑥ 세트 완료 1건당 실제 투표 수' }), el('div', { class: 'state', text: '데이터 수집 필요: 친구 선택 이벤트 + 세트 ID' })),
-        el('div', { class: 'card' }, el('h3', { text: '⑦ 0표 완료 비율 (전부 건너뛰고 완료)' }), el('div', { class: 'state', text: '데이터 수집 필요: 세트별 실제 선택 수' }))));
+        el('div', { class: 'card' }, el('h3', { text: '⑥ 세트 완료 1건당 실제 투표 수' }), el('div', { class: 'state', text: '⏸ 데이터 수집 필요: 친구 선택 이벤트 + 세트 ID' })),
+        el('div', { class: 'card' }, el('h3', { text: '⑦ 0표 완료 비율 (전부 건너뛰고 완료)' }), el('div', { class: 'state', text: '⏸ 데이터 수집 필요: 세트별 실제 선택 수' })))));
   }
 
   fetch('data.json', { cache: 'no-store' })
