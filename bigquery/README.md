@@ -22,6 +22,7 @@ python bigquery/validate_mart.py   # 노트북 숫자와 비교 (23개 항목, �
 python bigquery/export_json.py     # dashboard/data.json 만들기
 ```
 
-자동 갱신: `.github/workflows/update-data.yml` (매일 09:00 KST, 저장소 Secret `GCP_SA_KEY` 필요)
+자동 갱신: `.github/workflows/update-data.yml` (매일 09:00 KST). 키 파일 없이 Workload Identity로 접속하며,
+처음 한 번 GCP 프로젝트 소유자가 `bigquery/setup_github_access.sh`를 Cloud Shell에서 실행해야 한다.
 
 비율은 날짜별 분자·분모 합으로 다시 계산한다 (일별 비율의 단순 평균 아님).

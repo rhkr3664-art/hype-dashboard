@@ -1,6 +1,6 @@
 # 매일 mart를 다시 만들고 dashboard/data.json을 갱신해 커밋한다.
-# 필요한 저장소 Secret: GCP_SA_KEY (BigQuery 서비스 계정 JSON 키 전체)
-# 서비스 계정 권한: BigQuery 데이터 편집자(mart), BigQuery 작업 사용자, clean 데이터셋 읽기
+# BigQuery 접속은 키 파일 없이 Workload Identity로 한다 (Secret 불필요).
+# 처음 한 번 프로젝트 소유자가 bigquery/setup_github_access.sh 를 Cloud Shell에서 실행해야 한다.
 name: update-dashboard-data
 
 on:
@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write   # Workload Identity 토큰 발급
 
 jobs:
   update:
@@ -25,7 +26,8 @@ jobs:
 
       - uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          workload_identity_provider: projects/528946769718/locations/global/workloadIdentityPools/github/providers/github-repo
+          service_account: hype-dashboard-actions@swift-implement-513705-i7.iam.gserviceaccount.com
 
       - name: mart 갱신
         run: python bigquery/run_mart.py
