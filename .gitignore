@@ -1,0 +1,10 @@
+# 기본은 모두 제외하고, 대시보드에 필요한 폴더만 올린다
+# (원본 데이터·DB 접속 정보·노트북은 올리지 않음)
+/*
+!/.gitignore
+!/.github/
+!/bigquery/
+!/dashboard/
+__pycache__/
+*.json.key
+*service-account*.json

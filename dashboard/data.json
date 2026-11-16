@@ -1,0 +1,666 @@
+{
+  "meta": {
+    "title": "익명 투표 앱 서비스 현황 대시보드",
+    "generated_at": "2026-11-16T16:51:56+09:00",
+    "source": "BigQuery swift-implement-513705-i7.mart",
+    "kpi_period": [
+      "2023-07-25",
+      "2023-08-10"
+    ],
+    "note": "KPI 기간은 A/B 테스트 전 기준 기간. 퍼널·D1은 사용자×날짜 단위, 아하모먼트는 7/18~7/27 신규 가입자 기준"
+  },
+  "kpi": {
+    "visit_dau_avg": {
+      "label": "방문 DAU (일평균)",
+      "value": 22650.6,
+      "unit": "명"
+    },
+    "complete_dau_avg": {
+      "label": "완료 DAU (일평균)",
+      "value": 3740.3,
+      "unit": "명"
+    },
+    "launch_to_complete": {
+      "label": "앱 실행 → 세트 완료율",
+      "value": 16.5,
+      "numerator": 63360,
+      "denominator": 384111,
+      "unit": "%"
+    },
+    "launch_to_start": {
+      "label": "앱 실행 → 투표 시작률",
+      "value": 23.61,
+      "numerator": 90682,
+      "denominator": 384111,
+      "unit": "%"
+    },
+    "start_to_complete": {
+      "label": "투표 시작 → 세트 완료율",
+      "value": 69.87,
+      "numerator": 63360,
+      "denominator": 90682,
+      "unit": "%"
+    },
+    "open_start_10m": {
+      "label": "받은 투표 확인 → 10분 내 시작률",
+      "value": 21.22,
+      "numerator": 19968,
+      "denominator": 94092,
+      "unit": "%"
+    },
+    "aha_rate": {
+      "label": "첫 7일 2회 완료 도달률 (아하모먼트)",
+      "value": 40.95,
+      "numerator": 206,
+      "denominator": 503,
+      "unit": "%"
+    },
+    "recomplete_7d": {
+      "label": "이후 7일 세트 재완료율",
+      "value": 50.86,
+      "numerator": 19271,
+      "denominator": 37888,
+      "unit": "%"
+    },
+    "d1_return": {
+      "label": "앱 실행일 기준 D1 재방문율",
+      "value": 28.27,
+      "numerator": 104428,
+      "denominator": 369388,
+      "unit": "%"
+    },
+    "next_week_return": {
+      "label": "다음 주 재방문율 (7/18주 → 7/25주)",
+      "value": 40.37,
+      "numerator": 51197,
+      "denominator": 126835,
+      "unit": "%"
+    }
+  },
+  "funnel": {
+    "basic": [
+      {
+        "step": "앱 실행",
+        "n": 384111
+      },
+      {
+        "step": "투표 시작",
+        "n": 90682
+      },
+      {
+        "step": "첫 관측 반응",
+        "n": 69147
+      },
+      {
+        "step": "세트 완료",
+        "n": 63360
+      }
+    ],
+    "extended": [
+      {
+        "step": "앱 실행",
+        "n": 384111
+      },
+      {
+        "step": "받은 투표 확인",
+        "n": 118279
+      },
+      {
+        "step": "질문 탭 진입",
+        "n": 49487
+      },
+      {
+        "step": "투표 시작",
+        "n": 15367
+      },
+      {
+        "step": "첫 관측 반응",
+        "n": 12539
+      },
+      {
+        "step": "세트 완료",
+        "n": 11609
+      }
+    ]
+  },
+  "daily": [
+    {
+      "date": "2023-07-18",
+      "visit_dau": 34757,
+      "complete_dau": 5619,
+      "complete_user_rate": 0.161665,
+      "n_launch": null,
+      "n_start": null,
+      "n_complete": null,
+      "launch_to_start": null,
+      "launch_to_complete": null,
+      "d1_return_rate": null,
+      "n_open_users": 7663,
+      "n_start_10m": 1806,
+      "start_10m_rate": 0.235678,
+      "n_complete_users": 5619,
+      "n_recomplete_7d": 3133,
+      "recomplete_7d_rate": 0.557573
+    },
+    {
+      "date": "2023-07-19",
+      "visit_dau": 26250,
+      "complete_dau": 4817,
+      "complete_user_rate": 0.183505,
+      "n_launch": null,
+      "n_start": null,
+      "n_complete": null,
+      "launch_to_start": null,
+      "launch_to_complete": null,
+      "d1_return_rate": null,
+      "n_open_users": 6350,
+      "n_start_10m": 1563,
+      "start_10m_rate": 0.246142,
+      "n_complete_users": 4817,
+      "n_recomplete_7d": 2915,
+      "recomplete_7d_rate": 0.605148
+    },
+    {
+      "date": "2023-07-20",
+      "visit_dau": 37969,
+      "complete_dau": 6645,
+      "complete_user_rate": 0.175011,
+      "n_launch": null,
+      "n_start": null,
+      "n_complete": null,
+      "launch_to_start": null,
+      "launch_to_complete": null,
+      "d1_return_rate": null,
+      "n_open_users": 9736,
+      "n_start_10m": 2321,
+      "start_10m_rate": 0.238394,
+      "n_complete_users": 6645,
+      "n_recomplete_7d": 3281,
+      "recomplete_7d_rate": 0.493755
+    },
+    {
+      "date": "2023-07-21",
+      "visit_dau": 38894,
+      "complete_dau": 6781,
+      "complete_user_rate": 0.174346,
+      "n_launch": null,
+      "n_start": null,
+      "n_complete": null,
+      "launch_to_start": null,
+      "launch_to_complete": null,
+      "d1_return_rate": null,
+      "n_open_users": 9922,
+      "n_start_10m": 2276,
+      "start_10m_rate": 0.229389,
+      "n_complete_users": 6781,
+      "n_recomplete_7d": 3233,
+      "recomplete_7d_rate": 0.476773
+    },
+    {
+      "date": "2023-07-22",
+      "visit_dau": 24787,
+      "complete_dau": 4533,
+      "complete_user_rate": 0.182878,
+      "n_launch": null,
+      "n_start": null,
+      "n_complete": null,
+      "launch_to_start": null,
+      "launch_to_complete": null,
+      "d1_return_rate": null,
+      "n_open_users": 6260,
+      "n_start_10m": 1630,
+      "start_10m_rate": 0.260383,
+      "n_complete_users": 4533,
+      "n_recomplete_7d": 2541,
+      "recomplete_7d_rate": 0.560556
+    },
+    {
+      "date": "2023-07-23",
+      "visit_dau": 33375,
+      "complete_dau": 5990,
+      "complete_user_rate": 0.179476,
+      "n_launch": null,
+      "n_start": null,
+      "n_complete": null,
+      "launch_to_start": null,
+      "launch_to_complete": null,
+      "d1_return_rate": null,
+      "n_open_users": 8996,
+      "n_start_10m": 2103,
+      "start_10m_rate": 0.233771,
+      "n_complete_users": 5990,
+      "n_recomplete_7d": 2913,
+      "recomplete_7d_rate": 0.486311
+    },
+    {
+      "date": "2023-07-24",
+      "visit_dau": 24222,
+      "complete_dau": 4443,
+      "complete_user_rate": 0.183428,
+      "n_launch": null,
+      "n_start": null,
+      "n_complete": null,
+      "launch_to_start": null,
+      "launch_to_complete": null,
+      "d1_return_rate": null,
+      "n_open_users": 6154,
+      "n_start_10m": 1442,
+      "start_10m_rate": 0.234319,
+      "n_complete_users": 4443,
+      "n_recomplete_7d": 2457,
+      "recomplete_7d_rate": 0.553005
+    },
+    {
+      "date": "2023-07-25",
+      "visit_dau": 21313,
+      "complete_dau": 3996,
+      "complete_user_rate": 0.187491,
+      "n_launch": 21238,
+      "n_start": 5368,
+      "n_complete": 3983,
+      "launch_to_start": 0.252754,
+      "launch_to_complete": 0.187541,
+      "d1_return_rate": 0.321452,
+      "n_open_users": 5341,
+      "n_start_10m": 1238,
+      "start_10m_rate": 0.231792,
+      "n_complete_users": 3996,
+      "n_recomplete_7d": 2270,
+      "recomplete_7d_rate": 0.568068
+    },
+    {
+      "date": "2023-07-26",
+      "visit_dau": 20136,
+      "complete_dau": 3692,
+      "complete_user_rate": 0.183353,
+      "n_launch": 20070,
+      "n_start": 5024,
+      "n_complete": 3680,
+      "launch_to_start": 0.250324,
+      "launch_to_complete": 0.183358,
+      "d1_return_rate": 0.351719,
+      "n_open_users": 5029,
+      "n_start_10m": 1118,
+      "start_10m_rate": 0.222311,
+      "n_complete_users": 3692,
+      "n_recomplete_7d": 2077,
+      "recomplete_7d_rate": 0.562568
+    },
+    {
+      "date": "2023-07-27",
+      "visit_dau": 31313,
+      "complete_dau": 4795,
+      "complete_user_rate": 0.153131,
+      "n_launch": 31249,
+      "n_start": 7022,
+      "n_complete": 4784,
+      "launch_to_start": 0.224711,
+      "launch_to_complete": 0.153093,
+      "d1_return_rate": 0.277737,
+      "n_open_users": 7818,
+      "n_start_10m": 1646,
+      "start_10m_rate": 0.21054,
+      "n_complete_users": 4795,
+      "n_recomplete_7d": 2192,
+      "recomplete_7d_rate": 0.457143
+    },
+    {
+      "date": "2023-07-28",
+      "visit_dau": 30566,
+      "complete_dau": 4984,
+      "complete_user_rate": 0.163057,
+      "n_launch": 30508,
+      "n_start": 7208,
+      "n_complete": 4967,
+      "launch_to_start": 0.236266,
+      "launch_to_complete": 0.16281,
+      "d1_return_rate": 0.270388,
+      "n_open_users": 7850,
+      "n_start_10m": 1667,
+      "start_10m_rate": 0.212357,
+      "n_complete_users": 4984,
+      "n_recomplete_7d": 2214,
+      "recomplete_7d_rate": 0.444222
+    },
+    {
+      "date": "2023-07-29",
+      "visit_dau": 30629,
+      "complete_dau": 4968,
+      "complete_user_rate": 0.162199,
+      "n_launch": 30593,
+      "n_start": 7265,
+      "n_complete": 4949,
+      "launch_to_start": 0.237473,
+      "launch_to_complete": 0.161769,
+      "d1_return_rate": 0.240807,
+      "n_open_users": 8016,
+      "n_start_10m": 1717,
+      "start_10m_rate": 0.214197,
+      "n_complete_users": 4968,
+      "n_recomplete_7d": 2234,
+      "recomplete_7d_rate": 0.449678
+    },
+    {
+      "date": "2023-07-30",
+      "visit_dau": 21154,
+      "complete_dau": 3596,
+      "complete_user_rate": 0.169991,
+      "n_launch": 21073,
+      "n_start": 5053,
+      "n_complete": 3579,
+      "launch_to_start": 0.239786,
+      "launch_to_complete": 0.169838,
+      "d1_return_rate": 0.287714,
+      "n_open_users": 5241,
+      "n_start_10m": 1084,
+      "start_10m_rate": 0.206831,
+      "n_complete_users": 3596,
+      "n_recomplete_7d": 1849,
+      "recomplete_7d_rate": 0.514182
+    },
+    {
+      "date": "2023-07-31",
+      "visit_dau": 18928,
+      "complete_dau": 3280,
+      "complete_user_rate": 0.173288,
+      "n_launch": 18863,
+      "n_start": 4476,
+      "n_complete": 3268,
+      "launch_to_start": 0.23729,
+      "launch_to_complete": 0.173249,
+      "d1_return_rate": 0.297779,
+      "n_open_users": 4783,
+      "n_start_10m": 1027,
+      "start_10m_rate": 0.214719,
+      "n_complete_users": 3280,
+      "n_recomplete_7d": 1782,
+      "recomplete_7d_rate": 0.543293
+    },
+    {
+      "date": "2023-08-01",
+      "visit_dau": 17692,
+      "complete_dau": 3075,
+      "complete_user_rate": 0.173807,
+      "n_launch": 17627,
+      "n_start": 4195,
+      "n_complete": 3066,
+      "launch_to_start": 0.237987,
+      "launch_to_complete": 0.173938,
+      "d1_return_rate": 0.300562,
+      "n_open_users": 4385,
+      "n_start_10m": 956,
+      "start_10m_rate": 0.218016,
+      "n_complete_users": 3075,
+      "n_recomplete_7d": 1605,
+      "recomplete_7d_rate": 0.521951
+    },
+    {
+      "date": "2023-08-02",
+      "visit_dau": 16760,
+      "complete_dau": 2839,
+      "complete_user_rate": 0.169391,
+      "n_launch": 16719,
+      "n_start": 3912,
+      "n_complete": 2826,
+      "launch_to_start": 0.233985,
+      "launch_to_complete": 0.169029,
+      "d1_return_rate": 0.294814,
+      "n_open_users": 4161,
+      "n_start_10m": 903,
+      "start_10m_rate": 0.217015,
+      "n_complete_users": 2839,
+      "n_recomplete_7d": 1572,
+      "recomplete_7d_rate": 0.553716
+    },
+    {
+      "date": "2023-08-03",
+      "visit_dau": 15605,
+      "complete_dau": 2663,
+      "complete_user_rate": 0.17065,
+      "n_launch": 15564,
+      "n_start": 3725,
+      "n_complete": 2655,
+      "launch_to_start": 0.239334,
+      "launch_to_complete": 0.170586,
+      "d1_return_rate": 0.318877,
+      "n_open_users": 3895,
+      "n_start_10m": 799,
+      "start_10m_rate": 0.205135,
+      "n_complete_users": 2663,
+      "n_recomplete_7d": 1476,
+      "recomplete_7d_rate": 0.554262
+    },
+    {
+      "date": "2023-08-04",
+      "visit_dau": 24510,
+      "complete_dau": 3780,
+      "complete_user_rate": 0.154223,
+      "n_launch": 24485,
+      "n_start": 5575,
+      "n_complete": 3771,
+      "launch_to_start": 0.22769,
+      "launch_to_complete": 0.154013,
+      "d1_return_rate": 0.270656,
+      "n_open_users": 6353,
+      "n_start_10m": 1341,
+      "start_10m_rate": 0.211081,
+      "n_complete_users": null,
+      "n_recomplete_7d": null,
+      "recomplete_7d_rate": null
+    },
+    {
+      "date": "2023-08-05",
+      "visit_dau": 32744,
+      "complete_dau": 4715,
+      "complete_user_rate": 0.143996,
+      "n_launch": 32687,
+      "n_start": 7169,
+      "n_complete": 4704,
+      "launch_to_start": 0.219323,
+      "launch_to_complete": 0.14391,
+      "d1_return_rate": 0.282131,
+      "n_open_users": 8210,
+      "n_start_10m": 1714,
+      "start_10m_rate": 0.20877,
+      "n_complete_users": null,
+      "n_recomplete_7d": null,
+      "recomplete_7d_rate": null
+    },
+    {
+      "date": "2023-08-06",
+      "visit_dau": 36220,
+      "complete_dau": 5678,
+      "complete_user_rate": 0.156764,
+      "n_launch": 36140,
+      "n_start": 8550,
+      "n_complete": 5662,
+      "launch_to_start": 0.23658,
+      "launch_to_complete": 0.156669,
+      "d1_return_rate": 0.235971,
+      "n_open_users": 9781,
+      "n_start_10m": 2223,
+      "start_10m_rate": 0.227277,
+      "n_complete_users": null,
+      "n_recomplete_7d": null,
+      "recomplete_7d_rate": null
+    },
+    {
+      "date": "2023-08-07",
+      "visit_dau": 20617,
+      "complete_dau": 3524,
+      "complete_user_rate": 0.170927,
+      "n_launch": 20534,
+      "n_start": 4953,
+      "n_complete": 3507,
+      "launch_to_start": 0.24121,
+      "launch_to_complete": 0.17079,
+      "d1_return_rate": 0.279244,
+      "n_open_users": 5181,
+      "n_start_10m": 1113,
+      "start_10m_rate": 0.214823,
+      "n_complete_users": null,
+      "n_recomplete_7d": null,
+      "recomplete_7d_rate": null
+    },
+    {
+      "date": "2023-08-08",
+      "visit_dau": 16782,
+      "complete_dau": 2910,
+      "complete_user_rate": 0.1734,
+      "n_launch": 16734,
+      "n_start": 4093,
+      "n_complete": 2895,
+      "launch_to_start": 0.244592,
+      "launch_to_complete": 0.173001,
+      "d1_return_rate": 0.291741,
+      "n_open_users": 4129,
+      "n_start_10m": 900,
+      "start_10m_rate": 0.21797,
+      "n_complete_users": null,
+      "n_recomplete_7d": null,
+      "recomplete_7d_rate": null
+    },
+    {
+      "date": "2023-08-09",
+      "visit_dau": 15345,
+      "complete_dau": 2578,
+      "complete_user_rate": 0.168003,
+      "n_launch": 15304,
+      "n_start": 3585,
+      "n_complete": 2564,
+      "launch_to_start": 0.234252,
+      "launch_to_complete": 0.167538,
+      "d1_return_rate": 0.286461,
+      "n_open_users": 3860,
+      "n_start_10m": 791,
+      "start_10m_rate": 0.204922,
+      "n_complete_users": null,
+      "n_recomplete_7d": null,
+      "recomplete_7d_rate": null
+    },
+    {
+      "date": "2023-08-10",
+      "visit_dau": 14747,
+      "complete_dau": 2512,
+      "complete_user_rate": 0.17034,
+      "n_launch": 14723,
+      "n_start": 3509,
+      "n_complete": 2500,
+      "launch_to_start": 0.238335,
+      "launch_to_complete": 0.169802,
+      "d1_return_rate": null,
+      "n_open_users": 3750,
+      "n_start_10m": 750,
+      "start_10m_rate": 0.2,
+      "n_complete_users": null,
+      "n_recomplete_7d": null,
+      "recomplete_7d_rate": null
+    }
+  ],
+  "aha": {
+    "reached_w2_return": 84.95,
+    "not_reached_w2_return": 19.53,
+    "by_signup_day": [
+      {
+        "signup_day": "2023-07-18",
+        "n_new_users": 89,
+        "n_aha": 47,
+        "aha_rate": 0.52809,
+        "w2_return_reached": 0.87234,
+        "w2_return_not_reached": 0.261905
+      },
+      {
+        "signup_day": "2023-07-19",
+        "n_new_users": 59,
+        "n_aha": 26,
+        "aha_rate": 0.440678,
+        "w2_return_reached": 0.846154,
+        "w2_return_not_reached": 0.30303
+      },
+      {
+        "signup_day": "2023-07-20",
+        "n_new_users": 54,
+        "n_aha": 24,
+        "aha_rate": 0.444444,
+        "w2_return_reached": 0.833333,
+        "w2_return_not_reached": 0.166667
+      },
+      {
+        "signup_day": "2023-07-21",
+        "n_new_users": 53,
+        "n_aha": 18,
+        "aha_rate": 0.339623,
+        "w2_return_reached": 0.833333,
+        "w2_return_not_reached": 0.142857
+      },
+      {
+        "signup_day": "2023-07-22",
+        "n_new_users": 61,
+        "n_aha": 29,
+        "aha_rate": 0.47541,
+        "w2_return_reached": 0.827586,
+        "w2_return_not_reached": 0.15625
+      },
+      {
+        "signup_day": "2023-07-23",
+        "n_new_users": 32,
+        "n_aha": 11,
+        "aha_rate": 0.34375,
+        "w2_return_reached": 0.727273,
+        "w2_return_not_reached": 0.190476
+      },
+      {
+        "signup_day": "2023-07-24",
+        "n_new_users": 45,
+        "n_aha": 19,
+        "aha_rate": 0.422222,
+        "w2_return_reached": 0.947368,
+        "w2_return_not_reached": 0.153846
+      },
+      {
+        "signup_day": "2023-07-25",
+        "n_new_users": 43,
+        "n_aha": 17,
+        "aha_rate": 0.395349,
+        "w2_return_reached": 0.941176,
+        "w2_return_not_reached": 0.115385
+      },
+      {
+        "signup_day": "2023-07-26",
+        "n_new_users": 37,
+        "n_aha": 9,
+        "aha_rate": 0.243243,
+        "w2_return_reached": 0.888889,
+        "w2_return_not_reached": 0.178571
+      },
+      {
+        "signup_day": "2023-07-27",
+        "n_new_users": 30,
+        "n_aha": 6,
+        "aha_rate": 0.2,
+        "w2_return_reached": 0.5,
+        "w2_return_not_reached": 0.25
+      }
+    ]
+  },
+  "weekly_return": [
+    {
+      "week_no": 1,
+      "week_start": "2023-07-18",
+      "n_active": 126835,
+      "n_next_week_active": 51197,
+      "next_week_return_rate": 0.40365
+    },
+    {
+      "week_no": 2,
+      "week_start": "2023-07-25",
+      "n_active": 105056,
+      "n_next_week_active": 44278,
+      "next_week_return_rate": 0.42147
+    }
+  ],
+  "not_available": [
+    "완료 1건당 실제 투표 수",
+    "0표 완료 비율"
+  ]
+}
