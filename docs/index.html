@@ -22,6 +22,10 @@
   --blue: #2a78d6;   --blue-wash: rgba(42,120,214,0.10);  --blue-soft: #e6f0fc;
   --orange: #eb6834; --orange-wash: rgba(235,104,52,0.10); --orange-soft: #fdeee6;
   --aqua: #1baf7a;   --aqua-wash: rgba(27,175,122,0.10);   --aqua-soft: #e3f6ee;
+  /* 비교 기간 막대: 이번 기간 = 진한 남보라, 비교 기간 = 회색 */
+  --cur: #3a2d9c; --base: #c3c2b7;
+  /* 증감 표시: 오름 = 빨강, 내림 = 파랑, 기준 안 = 회색 (항상 ▲▼ 기호와 함께) */
+  --up: #d03b3b; --up-soft: #fbe9e9; --down: #1c5cab; --down-soft: #e3edfb; --flat: #6b6a66; --flat-soft: #f0efec;
   --hero-from: #1b1650; --hero-mid: #3a2d9c; --hero-to: #7a3fb8;
 }
 @media (prefers-color-scheme: dark) {
@@ -32,6 +36,8 @@
     --blue: #3987e5; --blue-wash: rgba(57,135,229,0.16); --blue-soft: rgba(57,135,229,0.16);
     --orange: #d95926; --orange-wash: rgba(217,89,38,0.16); --orange-soft: rgba(217,89,38,0.18);
     --aqua: #199e70; --aqua-wash: rgba(25,158,112,0.16); --aqua-soft: rgba(25,158,112,0.18);
+    --cur: #9085e9; --base: #5a5955;
+    --up: #ef7676; --up-soft: rgba(208,59,59,0.22); --down: #6da7ec; --down-soft: rgba(57,135,229,0.22); --flat: #b0afa8; --flat-soft: #2c2c2a;
     --hero-from: #120f38; --hero-mid: #2a2075; --hero-to: #55308a;
   }
 }
@@ -42,6 +48,8 @@
   --blue: #3987e5; --blue-wash: rgba(57,135,229,0.16); --blue-soft: rgba(57,135,229,0.16);
   --orange: #d95926; --orange-wash: rgba(217,89,38,0.16); --orange-soft: rgba(217,89,38,0.18);
   --aqua: #199e70; --aqua-wash: rgba(25,158,112,0.16); --aqua-soft: rgba(25,158,112,0.18);
+  --cur: #9085e9; --base: #5a5955;
+  --up: #ef7676; --up-soft: rgba(208,59,59,0.22); --down: #6da7ec; --down-soft: rgba(57,135,229,0.22); --flat: #b0afa8; --flat-soft: #2c2c2a;
   --hero-from: #120f38; --hero-mid: #2a2075; --hero-to: #55308a;
 }
 * { box-sizing: border-box; }
@@ -50,23 +58,29 @@ body {
   font: 15px/1.5 system-ui, -apple-system, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
 }
 .wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+[hidden] { display: none !important; }
 
 /* ---------- header band ---------- */
 .band {
   background: radial-gradient(1200px 400px at 85% -10%, rgba(255,140,190,0.35), transparent 60%),
               linear-gradient(120deg, var(--hero-from), var(--hero-mid) 55%, var(--hero-to));
-  color: #fff; padding: 28px 0 32px;
+  color: #fff; padding: 28px 0 28px;
 }
 .brand { display: flex; align-items: center; gap: 10px; }
 .logo { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, #ff8ac2, #ffb36b);
   display: grid; place-items: center; font-weight: 800; color: #1b1650; font-size: 17px; }
 .band h1 { font-size: 22px; margin: 0; font-weight: 700; letter-spacing: -0.01em; }
-.band .desc { margin: 6px 0 0; color: rgba(255,255,255,0.78); font-size: 14px; }
 .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .meta span { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.88); border-radius: 999px; padding: 2px 10px; font-size: 12.5px; }
-.kpis { display: grid; grid-template-columns: 1.3fr repeat(3, 1fr); gap: 14px; margin-top: 24px; }
+
+.tabs { display: flex; gap: 4px; margin-top: 20px; background: rgba(255,255,255,0.10); border-radius: 12px; padding: 4px; width: fit-content; max-width: 100%; overflow-x: auto; }
+.tabs button { border: 0; background: transparent; color: rgba(255,255,255,0.80); font: inherit; font-size: 14px; padding: 6px 14px; border-radius: 9px; cursor: pointer; white-space: nowrap; }
+.tabs button[aria-selected="true"] { background: #fff; color: #1b1650; font-weight: 700; }
+.tabs button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+.kpis { display: grid; grid-template-columns: 1.3fr repeat(3, 1fr); gap: 14px; margin-top: 20px; }
 @media (max-width: 860px) { .kpis { grid-template-columns: 1fr 1fr; } .kpis .hero { grid-column: 1 / -1; } }
-.kpi { background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.16); border-radius: 16px; padding: 16px 18px; backdrop-filter: blur(4px); }
+.kpi { background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.16); border-radius: 16px; padding: 16px 18px; }
 .kpi .label { font-size: 13px; color: rgba(255,255,255,0.80); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .kpi .value { font-size: 32px; font-weight: 700; margin-top: 6px; line-height: 1.1; letter-spacing: -0.01em; }
 .kpi .frac { font-size: 12px; color: rgba(255,255,255,0.62); margin-top: 2px; }
@@ -80,20 +94,36 @@ body {
 .kpi .bar i { display: block; height: 100%; border-radius: 999px; background: #fff; }
 .kpi.hero .bar { background: #ece9f8; }
 .kpi.hero .bar i { background: #3a2d9c; }
+.kpi .wow { margin-top: 8px; font-size: 12px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.kpi .wow .when { color: rgba(255,255,255,0.62); }
+.kpi.hero .wow .when { color: #898781; }
+
+/* delta chip */
+.delta { display: inline-flex; align-items: center; gap: 3px; font-weight: 700; font-size: 12.5px; border-radius: 6px; padding: 1px 7px; font-variant-numeric: tabular-nums; }
+.delta.up { color: var(--up); background: var(--up-soft); }
+.delta.down { color: var(--down); background: var(--down-soft); }
+.delta.flat { color: var(--flat); background: var(--flat-soft); }
+.delta.na { color: var(--muted); background: transparent; font-weight: 500; padding: 0; }
+.kpi:not(.hero) .delta.up { color: #fff; background: rgba(239,118,118,0.55); }
+.kpi:not(.hero) .delta.down { color: #fff; background: rgba(109,167,236,0.50); }
+.kpi:not(.hero) .delta.flat { color: #fff; background: rgba(255,255,255,0.18); }
+.kpi:not(.hero) .delta.na { color: rgba(255,255,255,0.62); }
 
 /* ---------- sections ---------- */
 section { margin-top: 40px; }
 .sec-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .sec-head .tag { font-size: 12px; font-weight: 700; border-radius: 999px; padding: 2px 10px; }
 .sec-head h2 { font-size: 19px; margin: 0; font-weight: 700; }
-.lede { color: var(--ink-2); margin: 4px 0 14px; font-size: 14px; }
+.cond { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 14px; }
+.cond span { font-size: 12.5px; color: var(--ink-2); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 2px 8px; }
+.cond b { font-weight: 650; color: var(--ink); margin-right: 4px; }
 .t-blue { background: var(--blue-soft); color: var(--ink); }
 .t-orange { background: var(--orange-soft); color: var(--ink); }
 .t-aqua { background: var(--aqua-soft); color: var(--ink); }
 .t-chip { background: var(--chip); color: var(--ink-2); }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 18px 18px 14px; box-shadow: var(--shadow); position: relative; overflow: hidden; }
 .card::before { content: ""; position: absolute; left: 0; top: 0; right: 0; height: 3px; background: var(--accent, transparent); }
-.c-blue { --accent: var(--blue); } .c-orange { --accent: var(--orange); } .c-aqua { --accent: var(--aqua); }
+.c-blue { --accent: var(--blue); } .c-orange { --accent: var(--orange); } .c-aqua { --accent: var(--aqua); } .c-cur { --accent: var(--cur); }
 .card-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
 .card h3 { font-size: 15px; margin: 0; font-weight: 650; }
 .card .sub { color: var(--muted); font-size: 12.5px; margin: 2px 0 10px; }
@@ -114,11 +144,13 @@ section { margin-top: 40px; }
 .tip {
   position: fixed; pointer-events: none; z-index: 10; background: var(--surface); color: var(--ink);
   border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; font-size: 12.5px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.14); opacity: 0; transition: opacity .08s; max-width: 240px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.14); opacity: 0; transition: opacity .08s; max-width: 260px;
 }
 .tip .v { font-weight: 700; font-size: 14px; }
 .tip .k { color: var(--ink-2); }
 .tip .key { display: inline-block; width: 12px; height: 2px; vertical-align: middle; margin-right: 6px; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12.5px; color: var(--ink-2); margin: 4px 0 8px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
 
 /* funnel */
 .funnel { display: grid; gap: 8px; }
@@ -132,7 +164,7 @@ section { margin-top: 40px; }
 .conv { grid-column: 2 / 4; font-size: 12px; color: var(--muted); margin: -4px 0 -2px; }
 .conv b { color: var(--ink); }
 .conv .worst { background: var(--ink); color: var(--surface); border-radius: 4px; padding: 0 6px; margin-left: 6px; font-weight: 600; }
-.seg { display: inline-flex; background: var(--chip); border-radius: 10px; padding: 3px; margin-bottom: 12px; }
+.seg { display: inline-flex; background: var(--chip); border-radius: 10px; padding: 3px; margin-bottom: 12px; flex-wrap: wrap; }
 .seg button { border: 0; background: transparent; color: var(--ink-2); padding: 4px 12px; font: inherit; font-size: 13px; cursor: pointer; border-radius: 8px; }
 .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); font-weight: 650; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
 
@@ -147,6 +179,28 @@ section { margin-top: 40px; }
 .mini > div { background: var(--aqua-soft); border-radius: 12px; padding: 12px 14px; }
 .mini b { display: block; font-size: 22px; font-weight: 700; }
 .mini span { font-size: 12.5px; color: var(--ink-2); }
+
+/* ---------- compare view ---------- */
+.period { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 28px; }
+.period .p { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 8px 12px; font-size: 13.5px; }
+.period .p i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.period .vs { color: var(--muted); font-size: 13px; }
+.rule { font-size: 12.5px; color: var(--ink-2); margin-top: 10px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.ccards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-top: 16px; }
+.ccard { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; box-shadow: var(--shadow); }
+.ccard .label { font-size: 13px; color: var(--ink-2); }
+.ccard .row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 6px; }
+.ccard .a { font-size: 24px; font-weight: 700; }
+.ccard .b { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.ccard .na-note { font-size: 12.5px; color: var(--muted); margin-top: 8px; }
+.ranges { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-top: 24px; }
+.ranges fieldset { border: 1px solid var(--border); background: var(--surface); border-radius: 12px; padding: 10px 14px 12px; margin: 0; }
+.ranges legend { font-size: 13px; font-weight: 650; padding: 0 4px; }
+.ranges legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.ranges label { font-size: 12.5px; color: var(--ink-2); margin-right: 6px; }
+.ranges input { font: inherit; font-size: 13.5px; padding: 4px 6px; border: 1px solid var(--axis); border-radius: 8px; background: var(--surface); color: var(--ink); }
+.ranges .warn { color: var(--up); font-size: 12.5px; margin-top: 6px; }
+select.metric { font: inherit; font-size: 13.5px; padding: 4px 8px; border-radius: 8px; border: 1px solid var(--axis); background: var(--surface); color: var(--ink); margin-bottom: 8px; }
 
 details { margin-top: 10px; font-size: 13px; }
 summary { color: var(--ink-2); cursor: pointer; }
@@ -167,22 +221,30 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
 <div class="band">
   <div class="wrap">
     <div class="brand"><div class="logo" aria-hidden="true">?</div><h1>익명 투표 앱 서비스 현황</h1></div>
-    <p class="desc">앱을 켠 사람이 투표를 시작해 완료까지 가는지, 신규 가입자가 두 번째 완료(아하모먼트)에 도달하는지 봅니다.</p>
     <div class="meta" id="meta"></div>
+    <div class="tabs" role="tablist" aria-label="보기 선택" id="tabs"></div>
     <div class="kpis" id="kpis"></div>
   </div>
 </div>
 <div class="wrap">
-  <div id="app"><p class="lede" style="margin-top:24px">데이터를 불러오는 중…</p></div>
+  <div id="app"><p style="margin-top:24px;color:var(--ink-2)">데이터를 불러오는 중…</p></div>
+  <div id="compare" hidden></div>
   <footer>
     데이터: BigQuery <code>mart</code> → <code>data.json</code> (GitHub Actions 매일 갱신, 노트북 결과와 23개 항목 일치 검증 후 반영).
-    비율은 날짜별 분자·분모 합으로 계산하며 일별 비율의 단순 평균이 아닙니다.
+    비율은 날짜별 분자·분모 합으로 계산 (일별 비율의 단순 평균 아님).
   </footer>
 </div>
 <div class="tip" id="tip" role="status" aria-live="polite"></div>
 
 <script>
 (() => {
+  // =====================================================================
+  // 증감 색 기준 (팀 합의로 바꿀 수 있음)
+  //   비율 지표: 비교 기간 대비 ±1.0%p 이상 → 오름 빨강 / 내림 파랑, 그 안쪽은 회색
+  //   인원 지표(DAU): 비교 기간 대비 ±5% 이상 → 같은 색 규칙
+  // =====================================================================
+  const RULE = { ratePP: 1.0, countPct: 5 };
+
   const $ = (s, el = document) => el.querySelector(s);
   const el = (tag, attrs = {}, ...kids) => {
     const n = document.createElement(tag);
@@ -197,13 +259,20 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
   const nf = new Intl.NumberFormat('ko-KR');
   const pct = (v, d = 1) => v == null ? '–' : (v * 100).toFixed(d) + '%';
   const md = iso => { const [, m, d] = iso.split('-'); return `${+m}/${+d}`; };
+  const WD = ['일', '월', '화', '수', '목', '금', '토'];
+  const toD = iso => new Date(iso + 'T00:00:00Z');
+  const toISO = d => d.toISOString().slice(0, 10);
+  const addDays = (iso, n) => { const d = toD(iso); d.setUTCDate(d.getUTCDate() + n); return toISO(d); };
+  const wd = iso => WD[toD(iso).getUTCDay()];
+  const mdw = iso => `${md(iso)}(${wd(iso)})`;
+  const rangeText = (a, b) => a === b ? mdw(a) : `${mdw(a)}~${mdw(b)}`;
   const COLOR = { blue: ['var(--blue)', 'var(--blue-wash)'], orange: ['var(--orange)', 'var(--orange-wash)'], aqua: ['var(--aqua)', 'var(--aqua-wash)'] };
 
   // ---------- tooltip ----------
   const tip = $('#tip');
   function showTip(evt, rows, color = 'var(--blue)') {
     tip.replaceChildren(...rows.map(([v, k, key]) => {
-      const kk = key ? el('span', { class: 'key' }) : null; if (kk) kk.style.background = color;
+      const kk = key ? el('span', { class: 'key' }) : null; if (kk) kk.style.background = key === true ? color : key;
       return el('div', {}, kk, el('span', { class: 'v', text: v }), ' ', el('span', { class: 'k', text: k }));
     }));
     const r = evt.target.getBoundingClientRect();
@@ -224,6 +293,7 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
     const [stroke, wash] = COLOR[color];
     const draw = () => {
       host.replaceChildren();
+      if (!host.isConnected || host.clientWidth === 0) return;
       const W = Math.max(280, host.clientWidth), H = 210, m = { l: 40, r: 52, t: 10, b: 26 };
       const iw = W - m.l - m.r, ih = H - m.t - m.b;
       const dataMax = Math.max(...pts.map(p => p.y));
@@ -255,7 +325,7 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
         const p = pts[i];
         cross.setAttribute('x1', X(i)); cross.setAttribute('x2', X(i)); cross.setAttribute('opacity', 1);
         dot.setAttribute('cx', X(i)); dot.setAttribute('cy', Y(p.y)); dot.setAttribute('opacity', 1);
-        return [[fmt(p.y), tipLabel, true], ...(extra ? extra(p) : []), [md(p.x), '']];
+        return [[fmt(p.y), tipLabel, true], ...(extra ? extra(p) : []), [mdw(p.x), '']];
       };
       hit.addEventListener('pointermove', e => {
         const r = svg.getBoundingClientRect(); const px = (e.clientX - r.left) * (W / r.width);
@@ -277,10 +347,16 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
     new ResizeObserver(() => draw()).observe(host);
   }
 
+  const roundTop = (x, y, w, base) => {
+    const h = base - y, rad = Math.min(4, Math.max(0, h));
+    return `M${x},${base}V${y + rad}Q${x},${y} ${x + rad},${y}H${x + w - rad}Q${x + w},${y} ${x + w},${y + rad}V${base}Z`;
+  };
+
   // ---------- column chart (aha by signup day) ----------
   function columnChart(host, rows, avg) {
     const draw = () => {
       host.replaceChildren();
+      if (host.clientWidth === 0) return;
       const W = Math.max(280, host.clientWidth), H = 220, m = { l: 40, r: 8, t: 12, b: 40 };
       const iw = W - m.l - m.r, ih = H - m.t - m.b;
       const Y = v => m.t + ih - (v / 0.8) * ih;
@@ -292,12 +368,9 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
         const t = s('text', { x: m.l - 8, y: y + 4, 'text-anchor': 'end' }); t.textContent = Math.round(v * 100) + '%'; svg.append(t);
       }
       rows.forEach((r, i) => {
-        const cx = m.l + band * i + band / 2, x = cx - bw / 2, y = Y(r.aha_rate), h = Y(0) - y, rad = Math.min(4, h);
-        const path = s('path', {
-          class: 'col', fill: 'var(--orange)', tabindex: 0,
-          d: `M${x},${Y(0)}V${y + rad}Q${x},${y} ${x + rad},${y}H${x + bw - rad}Q${x + bw},${y} ${x + bw},${y + rad}V${Y(0)}Z`,
-        });
-        const rowsTip = () => [[pct(r.aha_rate), '도달률', true], [`${r.n_aha} / ${r.n_new_users}명`, '도달 / 신규 가입'], [md(r.signup_day) + ' 가입', '']];
+        const cx = m.l + band * i + band / 2, x = cx - bw / 2;
+        const path = s('path', { class: 'col', fill: 'var(--orange)', tabindex: 0, d: roundTop(x, Y(r.aha_rate), bw, Y(0)) });
+        const rowsTip = () => [[pct(r.aha_rate), '도달률', true], [`${r.n_aha} / ${r.n_new_users}명`, '도달 / 신규 가입'], [mdw(r.signup_day) + ' 가입', '']];
         const hitR = s('rect', { x: m.l + band * i, y: m.t, width: band, height: ih, fill: 'transparent' });
         const on = e => { path.classList.add('on'); showTip(e, rowsTip(), 'var(--orange)'); };
         const off = () => { path.classList.remove('on'); hideTip(); };
@@ -307,10 +380,59 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
         const t = s('text', { x: cx, y: H - 22, 'text-anchor': 'middle' }); t.textContent = md(r.signup_day); svg.append(t);
         const n = s('text', { x: cx, y: H - 6, 'text-anchor': 'middle' }); n.textContent = `n=${r.n_new_users}`; svg.append(n);
       });
-      // 전체 평균 기준선
       const ya = Y(avg);
       svg.append(s('line', { x1: m.l, x2: W - m.r, y1: ya, y2: ya, stroke: 'var(--ink-2)', 'stroke-width': 1 }));
       const at = s('text', { x: W - m.r, y: ya - 6, 'text-anchor': 'end', class: 'endlabel' }); at.textContent = `전체 ${pct(avg)}`; svg.append(at);
+      host.append(svg);
+    };
+    draw();
+    new ResizeObserver(() => draw()).observe(host);
+  }
+
+  // ---------- grouped columns: 이번 기간 vs 비교 기간, 날짜 순서대로 나란히 ----------
+  function pairChart(host, pairs, metric) {
+    const draw = () => {
+      host.replaceChildren();
+      if (host.clientWidth === 0) return;
+      const W = Math.max(280, host.clientWidth), H = 230, m = { l: 44, r: 8, t: 12, b: 42 };
+      const iw = W - m.l - m.r, ih = H - m.t - m.b;
+      const vals = pairs.flatMap(p => [p.a, p.b]).filter(v => v != null);
+      if (!vals.length) { host.append(el('p', { class: 'sub', text: '선택한 기간에 이 지표 데이터가 없습니다.' })); return; }
+      // 눈금 간격 = 1·2·2.5·5 × 10^k 중 최댓값/4 이상인 가장 작은 값
+      const top = Math.max(...vals) * 1.1, raw = top / 4, p10 = Math.pow(10, Math.floor(Math.log10(raw)));
+      const step = [1, 2, 2.5, 5, 10].map(k => k * p10).find(v => v >= raw);
+      const ticks = Math.max(1, Math.ceil(top / step)), max = ticks * step;
+      const Y = v => m.t + ih - (v / max) * ih;
+      const band = iw / pairs.length, bw = Math.min(22, (band - 10) / 2);
+      const svg = s('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': metric.label + ' 기간 비교' });
+      for (let k = 0; k <= ticks; k++) {
+        const v = step * k, y = Y(v);
+        svg.append(s('line', { x1: m.l, x2: W - m.r, y1: y, y2: y, stroke: k === 0 ? 'var(--axis)' : 'var(--grid)', 'stroke-width': 1 }));
+        const t = s('text', { x: m.l - 8, y: y + 4, 'text-anchor': 'end' }); t.textContent = metric.axis(v); svg.append(t);
+      }
+      const labelEvery = Math.max(1, Math.ceil(pairs.length / Math.max(1, Math.floor(iw / 56))));
+      pairs.forEach((p, i) => {
+        const cx = m.l + band * i + band / 2;
+        const g = [];
+        if (p.a != null) g.push(s('path', { class: 'col', fill: 'var(--cur)', d: roundTop(cx - bw - 1, Y(p.a), bw, Y(0)) }));
+        if (p.b != null) g.push(s('path', { class: 'col', fill: 'var(--base)', d: roundTop(cx + 1, Y(p.b), bw, Y(0)) }));
+        const hitR = s('rect', { x: m.l + band * i, y: m.t, width: band, height: ih, fill: 'transparent', tabindex: 0 });
+        const rows = () => {
+          const out = [[p.a == null ? '–' : metric.fmt(p.a), p.da ? mdw(p.da) : '이번 기간', 'var(--cur)'],
+                       [p.b == null ? '–' : metric.fmt(p.b), p.db ? mdw(p.db) : '비교 기간', 'var(--base)']];
+          if (p.a != null && p.b != null) out.push([deltaText(metric, p.a, p.b), '변화']);
+          return out;
+        };
+        const on = e => { g.forEach(n => n.classList.add('on')); showTip(e, rows()); };
+        const off = () => { g.forEach(n => n.classList.remove('on')); hideTip(); };
+        hitR.addEventListener('pointermove', on); hitR.addEventListener('pointerleave', off);
+        hitR.addEventListener('focus', on); hitR.addEventListener('blur', off);
+        svg.append(...g, hitR);
+        if (i % labelEvery === 0) {
+          const t1 = s('text', { x: cx, y: H - 24, 'text-anchor': 'middle' }); t1.textContent = p.da ? mdw(p.da) : `${i + 1}일째`; svg.append(t1);
+          if (p.db) { const t2 = s('text', { x: cx, y: H - 8, 'text-anchor': 'middle' }); t2.textContent = 'vs ' + md(p.db); svg.append(t2); }
+        }
+      });
       host.append(svg);
     };
     draw();
@@ -323,35 +445,155 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
         el('thead', {}, el('tr', {}, head.map(h => el('th', { text: h })))),
         el('tbody', {}, rows.map(r => el('tr', {}, r.map(c => el('td', { text: c }))))))));
   }
-  const secHead = (tagClass, tagText, title, lede) => [
-    el('div', { class: 'sec-head' }, el('span', { class: 'tag ' + tagClass, text: tagText }), el('h2', { text: title })),
-    el('p', { class: 'lede', text: lede })];
+  const cond = (...items) => el('div', { class: 'cond' }, items.map(([k, v]) => el('span', {}, el('b', { text: k }), v)));
+  const secHead = (tagClass, tagText, title) => el('div', { class: 'sec-head' }, el('span', { class: 'tag ' + tagClass, text: tagText }), el('h2', { text: title }));
   const cardHead = (n, color, title, sub, value, valueLabel) => el('div', { class: 'card-head' },
-    el('div', {}, el('h3', {}, n ? el('span', { class: 'num n-' + color, text: n }) : null, title), el('div', { class: 'sub', text: sub })),
+    el('div', {}, el('h3', {}, n ? el('span', { class: 'num n-' + color, text: n }) : null, title), sub ? el('div', { class: 'sub', text: sub }) : null),
     value ? el('div', { class: 'headline' }, el('b', { text: value }), el('span', { text: valueLabel })) : null);
 
-  // ---------- page ----------
-  function render(D) {
+  // =====================================================================
+  // 기간 비교 공통
+  // =====================================================================
+  let DAILY = [], BYDATE = {}, FIRST = '', LAST = '';
+  const METRICS = [
+    { key: 'l2c', label: '앱 실행 → 세트 완료율', kind: 'rate', num: 'n_complete', den: 'n_launch' },
+    { key: 'l2s', label: '앱 실행 → 투표 시작률', kind: 'rate', num: 'n_start', den: 'n_launch' },
+    { key: 's2c', label: '투표 시작 → 세트 완료율', kind: 'rate', num: 'n_complete', den: 'n_start' },
+    { key: 'o10', label: '받은 투표 확인 → 10분 내 시작률', kind: 'rate', num: 'n_start_10m', den: 'n_open_users', note: '날짜별 그날 첫 확인 기준' },
+    { key: 'rc7', label: '이후 7일 세트 재완료율', kind: 'rate', num: 'n_recomplete_7d', den: 'n_complete_users', note: '완료 후 7일이 지나야 집계' },
+    { key: 'd1', label: '다음 날 재방문율 (D1)', kind: 'rate', num: 'd1_return', den: 'd1_base', note: '다음 날 기록이 있어야 집계' },
+    { key: 'vdau', label: '방문 DAU (일평균)', kind: 'avg', field: 'visit_dau' },
+    { key: 'cdau', label: '완료 DAU (일평균)', kind: 'avg', field: 'complete_dau' },
+  ];
+  METRICS.forEach(m => {
+    m.fmt = m.kind === 'rate' ? v => pct(v) : v => nf.format(Math.round(v)) + '명';
+    m.axis = m.kind === 'rate' ? v => Math.round(v * 100) + '%' : v => v >= 1000 ? Math.round(v / 100) / 10 + 'K' : String(Math.round(v));
+    m.day = r => m.kind === 'rate' ? (r[m.den] ? r[m.num] / r[m.den] : null) : r[m.field];
+  });
+  const inRange = (from, to) => DAILY.filter(r => r.date >= from && r.date <= to);
+  function agg(m, from, to) {
+    const rows = inRange(from, to).filter(r => m.kind === 'rate' ? r[m.den] != null && r[m.num] != null : r[m.field] != null);
+    if (!rows.length) return null;
+    if (m.kind === 'rate') {
+      const n = rows.reduce((t, r) => t + r[m.num], 0), d = rows.reduce((t, r) => t + r[m.den], 0);
+      return d ? { v: n / d, n, d, days: rows.length } : null;
+    }
+    return { v: rows.reduce((t, r) => t + r[m.field], 0) / rows.length, days: rows.length };
+  }
+  function deltaInfo(m, a, b) {
+    if (a == null || b == null) return null;
+    if (m.kind === 'rate') {
+      const pp = (a - b) * 100;
+      return { cls: Math.abs(pp) < RULE.ratePP ? 'flat' : pp > 0 ? 'up' : 'down', text: `${pp > 0 ? '+' : ''}${pp.toFixed(1)}%p`, sign: Math.sign(pp) };
+    }
+    const r = b ? (a - b) / b * 100 : 0;
+    return { cls: Math.abs(r) < RULE.countPct ? 'flat' : r > 0 ? 'up' : 'down', text: `${r > 0 ? '+' : ''}${r.toFixed(1)}%`, sign: Math.sign(r) };
+  }
+  const deltaText = (m, a, b) => { const d = deltaInfo(m, a, b); return d ? d.text : '–'; };
+  function chip(info, naText = '비교 불가') {
+    if (!info) return el('span', { class: 'delta na', text: naText });
+    const arrow = info.cls === 'up' ? '▲' : info.cls === 'down' ? '▼' : info.sign > 0 ? '△' : info.sign < 0 ? '▽' : '–';
+    const word = info.cls === 'up' ? '크게 오름' : info.cls === 'down' ? '크게 내림' : '기준 안 변화';
+    return el('span', { class: 'delta ' + info.cls, title: word, 'aria-label': `${info.text}, ${word}` }, arrow, ' ', info.text);
+  }
+  // 전주: 월~일 고정. 오늘이 목요일이면 이번 주 월~목 vs 전주 월~목
+  function weekToDate(today) {
+    const dow = (toD(today).getUTCDay() + 6) % 7; // 월=0
+    const mon = addDays(today, -dow);
+    return { a: [mon, today], b: [addDays(mon, -7), addDays(today, -7)] };
+  }
+  const ruleLine = () => el('div', { class: 'rule' },
+    el('span', {}, '증감 표시 기준:'),
+    chip({ cls: 'up', text: `비율 +${RULE.ratePP}%p↑ / 인원 +${RULE.countPct}%↑`, sign: 1 }),
+    chip({ cls: 'down', text: `비율 −${RULE.ratePP}%p↓ / 인원 −${RULE.countPct}%↓`, sign: -1 }),
+    chip({ cls: 'flat', text: '그 사이', sign: 0 }));
+
+  // =====================================================================
+  // 비교 화면 (전주 · 전일 · 기간 설정 공통)
+  // =====================================================================
+  let cmpMetric = 'l2c';
+  function renderCompare(host, A, B, labels, extraTop) {
+    host.replaceChildren();
+    if (extraTop) host.append(extraTop);
+    host.append(el('div', { class: 'period' },
+      el('div', { class: 'p' }, (() => { const i = el('i'); i.style.background = 'var(--cur)'; return i; })(), el('b', { text: labels[0] + ' ' }), rangeText(A[0], A[1])),
+      el('span', { class: 'vs', text: 'vs' }),
+      el('div', { class: 'p' }, (() => { const i = el('i'); i.style.background = 'var(--base)'; return i; })(), el('b', { text: labels[1] + ' ' }), rangeText(B[0], B[1]))),
+      ruleLine());
+
+    const cards = el('div', { class: 'ccards' });
+    METRICS.forEach(m => {
+      const a = agg(m, A[0], A[1]), b = agg(m, B[0], B[1]);
+      const na = !a ? (m.note || '이 기간에 데이터 없음') : !b ? '비교 기간 데이터 없음' : null;
+      cards.append(el('div', { class: 'ccard' },
+        el('div', { class: 'label', text: m.label }),
+        el('div', { class: 'row' }, el('span', { class: 'a', text: a ? m.fmt(a.v) : '–' }), chip(a && b ? deltaInfo(m, a.v, b.v) : null, '')),
+        el('div', { class: 'b', text: `${labels[1]} ${b ? m.fmt(b.v) : '–'}` }),
+        na ? el('div', { class: 'na-note', text: '※ ' + na }) : null));
+    });
+    cards.append(el('div', { class: 'ccard' },
+      el('div', { class: 'label', text: '첫 7일 2회 완료 도달률 (아하모먼트)' }),
+      el('div', { class: 'row' }, el('span', { class: 'a', text: '–' })),
+      el('div', { class: 'na-note', text: '※ 가입일 코호트(7/18~7/27 가입자) 지표라 날짜 기간 비교 대상 아님. 전체 현황 탭 참고' })));
+    host.append(el('section', { style: 'margin-top:16px' }, cards));
+
+    // 날짜별 나란히 비교
+    const lenA = inRange(A[0], A[1]).length, lenB = inRange(B[0], B[1]).length, n = Math.max(lenA, lenB);
+    const datesA = [], datesB = [];
+    for (let i = 0; i < n; i++) { datesA.push(addDays(A[0], i)); datesB.push(addDays(B[0], i)); }
+    const chartHost = el('div', { class: 'chart' });
+    const tblHost = el('div');
+    const sel = el('select', { class: 'metric', 'aria-label': '비교할 지표' }, METRICS.map(m => {
+      const o = el('option', { value: m.key, text: m.label }); if (m.key === cmpMetric) o.selected = true; return o;
+    }));
+    const legend = el('div', { class: 'legend' },
+      el('span', {}, (() => { const i = el('i'); i.style.background = 'var(--cur)'; return i; })(), labels[0]),
+      el('span', {}, (() => { const i = el('i'); i.style.background = 'var(--base)'; return i; })(), labels[1]));
+    const drawPairs = () => {
+      const m = METRICS.find(x => x.key === sel.value); cmpMetric = m.key;
+      const pairs = datesA.map((da, i) => {
+        const db = datesB[i];
+        const ra = da <= A[1] ? BYDATE[da] : null, rb = db <= B[1] ? BYDATE[db] : null;
+        return { da: da <= A[1] ? da : null, db: db <= B[1] ? db : null, a: ra ? m.day(ra) : null, b: rb ? m.day(rb) : null };
+      });
+      pairChart(chartHost, pairs, m);
+      tblHost.replaceChildren(tableView([labels[0], '값', labels[1], '값', '변화'],
+        pairs.map(p => [p.da ? mdw(p.da) : '–', p.a == null ? '–' : m.fmt(p.a), p.db ? mdw(p.db) : '–', p.b == null ? '–' : m.fmt(p.b), deltaText(m, p.a, p.b)])));
+    };
+    sel.addEventListener('change', drawPairs);
+    host.append(el('section', {}, el('div', { class: 'card c-cur' },
+      cardHead('', '', '날짜별 나란히 비교', '같은 순서의 날끼리 비교 (이번 기간 1일째 ↔ 비교 기간 1일째)'), sel, legend, chartHost, tblHost)));
+    drawPairs();
+  }
+
+  function renderCustom(host) {
+    const wk = weekToDate(LAST);
+    const st = { a: wk.a.slice(), b: wk.b.slice() };
+    const mkInput = (val, on) => { const i = el('input', { type: 'date', min: FIRST, max: LAST, value: val }); i.addEventListener('change', () => on(i.value)); return i; };
+    const body = el('div');
+    const warn = el('div', { class: 'warn' });
+    const fs = (title, key, color) => el('fieldset', {},
+      el('legend', {}, (() => { const i = el('i'); i.style.background = color; return i; })(), title),
+      el('label', { text: '시작' }), mkInput(st[key][0], v => { st[key][0] = v; go(); }),
+      el('label', { text: ' 끝', style: 'margin-left:8px' }), mkInput(st[key][1], v => { st[key][1] = v; go(); }));
+    const top = el('div', {}, el('div', { class: 'ranges' }, fs('보고 싶은 기간', 'a', 'var(--cur)'), fs('비교 기간', 'b', 'var(--base)')), warn,
+      el('div', { class: 'rule', text: `선택 가능: ${mdw(FIRST)} ~ ${mdw(LAST)} · 퍼널·D1 지표는 7/25부터, 7일 재완료는 8/3까지` }));
+    function go() {
+      const bad = [st.a, st.b].some(([x, y]) => !x || !y || x > y);
+      warn.textContent = bad ? '시작일이 끝일보다 늦거나 비어 있어요.' : '';
+      if (bad) return;
+      renderCompare(body, st.a, st.b, ['보고 싶은 기간', '비교 기간']);
+    }
+    host.replaceChildren(top, body);
+    go();
+  }
+
+  // =====================================================================
+  // 전체 현황 (메인)
+  // =====================================================================
+  function renderMain(D) {
     const K = D.kpi, app = $('#app');
     app.replaceChildren();
-    $('#meta').append(
-      el('span', { text: `KPI 기간 ${md(D.meta.kpi_period[0])}~${md(D.meta.kpi_period[1])} · A/B 테스트 전 기준값` }),
-      el('span', { text: `갱신 ${D.meta.generated_at.replace('T', ' ').slice(0, 16)} KST` }));
-
-    const frac = k => `${nf.format(k.numerator)} / ${nf.format(k.denominator)}`;
-    const bar = v => { const b = el('div', { class: 'bar' }); const i = el('i'); i.style.width = v + '%'; b.append(i); return b; };
-    const kpi = (k, pill) => el('div', { class: 'kpi' },
-      el('div', { class: 'label' }, k.label, pill ? el('span', { class: 'pill', text: pill }) : null),
-      el('div', { class: 'value', text: k.value.toFixed(1) + '%' }), bar(k.value), el('div', { class: 'frac', text: frac(k) }));
-    const stopN = (100 - K.launch_to_start.value).toFixed(1);
-    $('#kpis').append(
-      el('div', { class: 'kpi hero' },
-        el('div', { class: 'label', text: '핵심 · ' + K.launch_to_complete.label }),
-        el('div', { class: 'value', text: K.launch_to_complete.value.toFixed(1) + '%' }), bar(K.launch_to_complete.value),
-        el('div', { class: 'frac', text: frac(K.launch_to_complete) + ' 사용자×날짜' }),
-        el('div', { class: 'why', text: `앱을 켠 날의 ${stopN}%는 투표를 시작하지 않아요. 가장 큰 이탈 구간입니다.` })),
-      kpi(K.launch_to_start, '가장 큰 병목'), kpi(K.open_start_10m, 'BEST 1'), kpi(K.aha_rate, '아하 · BEST 3'));
-
     const daily = D.daily;
     const pctFmt = (v, axis) => axis ? Math.round(v * 100) + '%' : pct(v);
 
@@ -365,16 +607,17 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
       b.addEventListener('click', () => { seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); funnel(c2, D.funnel[k]); });
       seg.append(b);
     });
-    app.append(el('section', {}, ...secHead('t-blue', '참여', '방문이 투표로 이어지는가', '단위는 사용자×날짜. 같은 날 앱 실행보다 늦은 시작·반응·완료만 이어진 것으로 셉니다.'),
+    app.append(el('section', {}, secHead('t-blue', '참여', '방문이 투표로 이어지는가'),
+      cond(['단위', '사용자×날짜'], ['조건', '같은 날 앱 실행 이후의 시작·반응·완료만'], ['기간', '7/25~8/10']),
       el('div', { class: 'grid2' },
-        el('div', { class: 'card c-blue' }, cardHead('1', 'blue', '앱 실행 → 세트 완료율 추이', '질문 탭 기록이 안정된 7/25부터'), c1,
+        el('div', { class: 'card c-blue' }, cardHead('1', 'blue', '앱 실행 → 세트 완료율 추이'), c1,
           tableView(['날짜', '앱 실행', '투표 시작', '세트 완료', '실행→시작', '실행→완료'],
-            fd.map(r => [md(r.date), nf.format(r.n_launch), nf.format(r.n_start), nf.format(r.n_complete), pct(r.launch_to_start), pct(r.launch_to_complete)]))),
-        el('div', { class: 'card c-blue' }, cardHead('2', 'blue', '어디서 끊기나: 퍼널', '받은 투표 확인 경로는 확인·질문 탭을 거친 경우만'), seg, c2)),
+            fd.map(r => [mdw(r.date), nf.format(r.n_launch), nf.format(r.n_start), nf.format(r.n_complete), pct(r.launch_to_start), pct(r.launch_to_complete)]))),
+        el('div', { class: 'card c-blue' }, cardHead('2', 'blue', '어디서 끊기나: 퍼널', '받은 투표 확인 경로 = 확인 → 질문 탭을 거친 경우만'), seg, c2)),
       el('div', { class: 'card c-blue', style: 'margin-top:16px' },
-        cardHead('3', 'blue', '받은 투표 확인 → 10분 내 투표 시작률', `날짜별 그날 첫 확인 기준 (상단 ${K.open_start_10m.value.toFixed(1)}%는 사용자별 첫 확인 기준)`,
+        cardHead('3', 'blue', '받은 투표 확인 → 10분 내 투표 시작률', `추이 = 날짜별 그날 첫 확인 기준 · ${K.open_start_10m.value.toFixed(1)}% = 사용자별 기간 내 첫 확인 기준`,
           K.open_start_10m.value.toFixed(1) + '%', '사용자 기준'), c3,
-        tableView(['날짜', '확인한 사용자', '10분 내 시작', '시작률'], od.map(r => [md(r.date), nf.format(r.n_open_users), nf.format(r.n_start_10m), pct(r.start_10m_rate)])))));
+        tableView(['날짜', '확인한 사용자', '10분 내 시작', '시작률'], od.map(r => [mdw(r.date), nf.format(r.n_open_users), nf.format(r.n_start_10m), pct(r.start_10m_rate)])))));
     lineChart(c1, fd.map(r => ({ x: r.date, y: r.launch_to_complete, r })), {
       fmt: pctFmt, tipLabel: '실행 → 완료', yMax: 0.2, extra: p => [[pct(p.r.launch_to_start), '실행 → 시작'], [nf.format(p.r.n_launch), '앱 실행']],
     });
@@ -406,16 +649,17 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
       const f = el('div', { class: 'fill' }); f.style.width = v + '%';
       return el('div', { class: 'row' + (dim ? ' dim' : '') }, el('span', { text: label }), el('div', { class: 'track' }, f), el('span', { class: 'v', text: v.toFixed(1) + '%' }));
     };
-    app.append(el('section', {}, ...secHead('t-orange', '아하모먼트', '두 번째 완료까지 가는가', '아하모먼트 = 가입 첫 7일 안에 질문 세트 2회 이상 완료. BEST 3(다음 세트 알림)이 겨냥하는 지표입니다.'),
+    app.append(el('section', {}, secHead('t-orange', '아하모먼트', '두 번째 완료까지 가는가'),
+      cond(['아하모먼트', '가입 후 7일 안 세트 2회 이상 완료'], ['대상', `7/18~7/27 신규 가입자 ${nf.format(K.aha_rate.denominator)}명`], ['관련 개선안', 'BEST 3']),
       el('div', { class: 'grid2' },
         el('div', { class: 'card c-orange' },
-          cardHead('4', 'orange', '가입 날짜별 도달률', `7/18~7/27 신규 가입자 ${nf.format(K.aha_rate.denominator)}명 · 날짜별 인원이 적어 흔들림이 큼`, K.aha_rate.value.toFixed(1) + '%', '전체 도달률'), c4,
-          el('div', { class: 'sub', style: 'margin-top:12px', text: '도달 여부별 가입 후 8~14일 재방문율' }),
+          cardHead('4', 'orange', '가입 날짜별 도달률', '날짜별 인원 적음 (n=30~89)', K.aha_rate.value.toFixed(1) + '%', '전체 도달률'), c4,
+          el('div', { class: 'sub', style: 'margin-top:12px', text: '가입 후 8~14일 재방문율' }),
           el('div', { class: 'cmp' }, cmpRow('도달', A.reached_w2_return), cmpRow('미도달', A.not_reached_w2_return, true)),
-          tableView(['가입일', '신규 가입', '도달', '도달률'], A.by_signup_day.map(r => [md(r.signup_day), nf.format(r.n_new_users), nf.format(r.n_aha), pct(r.aha_rate)]))),
+          tableView(['가입일', '신규 가입', '도달', '도달률'], A.by_signup_day.map(r => [mdw(r.signup_day), nf.format(r.n_new_users), nf.format(r.n_aha), pct(r.aha_rate)]))),
         el('div', { class: 'card c-orange' },
-          cardHead('5', 'orange', '이후 7일 세트 재완료율', '그날 완료한 사용자 중 다음 7일 안에 다시 완료 (8/3까지)', K.recomplete_7d.value.toFixed(1) + '%', '7/25~8/3 전체'), c5,
-          tableView(['날짜', '완료 사용자', '7일 내 재완료', '재완료율'], rd.map(r => [md(r.date), nf.format(r.n_complete_users), nf.format(r.n_recomplete_7d), pct(r.recomplete_7d_rate)]))))));
+          cardHead('5', 'orange', '이후 7일 세트 재완료율', '조건: 그날 완료 → 다음 7일 안 재완료 · 8/3까지', K.recomplete_7d.value.toFixed(1) + '%', '7/25~8/3 전체'), c5,
+          tableView(['날짜', '완료 사용자', '7일 내 재완료', '재완료율'], rd.map(r => [mdw(r.date), nf.format(r.n_complete_users), nf.format(r.n_recomplete_7d), pct(r.recomplete_7d_rate)]))))));
     columnChart(c4, A.by_signup_day, K.aha_rate.value / 100);
     lineChart(c5, rd.map(r => ({ x: r.date, y: r.recomplete_7d_rate, r })), {
       color: 'orange', fmt: pctFmt, tipLabel: '7일 재완료율', yMax: 0.8, extra: p => [[`${nf.format(p.r.n_recomplete_7d)} / ${nf.format(p.r.n_complete_users)}`, '재완료 / 완료']],
@@ -424,30 +668,98 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
     // ===== 규모·재방문 =====
     const c6 = el('div', { class: 'chart' }), c7 = el('div', { class: 'chart' });
     const kfmt = (v, axis) => axis ? (v >= 1000 ? (v / 1000) + 'K' : String(v)) : nf.format(v);
-    app.append(el('section', {}, ...secHead('t-aqua', '규모·재방문', '얼마나 오고, 다시 오는가', '방문자와 완료자는 규모가 달라 차트를 나눴습니다.'),
+    app.append(el('section', {}, secHead('t-aqua', '규모·재방문', '얼마나 오고, 다시 오는가'),
+      cond(['DAU', '그날 활동한 고유 사용자'], ['완료 DAU', '그날 세트 1번 이상 완료'], ['D1', '앱 실행일 다음 날 활동']),
       el('div', { class: 'grid2' },
-        el('div', { class: 'card c-aqua' }, cardHead('', 'aqua', '방문 DAU', '하루 동안 활동한 고유 사용자', nf.format(Math.round(K.visit_dau_avg.value)) + '명', '7/25~ 일평균'), c6),
-        el('div', { class: 'card c-aqua' }, cardHead('', 'aqua', '완료 DAU', '하루 동안 세트를 1번 이상 완료한 고유 사용자', nf.format(Math.round(K.complete_dau_avg.value)) + '명', '7/25~ 일평균'), c7)),
+        el('div', { class: 'card c-aqua' }, cardHead('', 'aqua', '방문 DAU', '', nf.format(Math.round(K.visit_dau_avg.value)) + '명', '7/25~ 일평균'), c6),
+        el('div', { class: 'card c-aqua' }, cardHead('', 'aqua', '완료 DAU', '', nf.format(Math.round(K.complete_dau_avg.value)) + '명', '7/25~ 일평균'), c7)),
       el('div', { class: 'mini' },
-        el('div', {}, el('b', { text: K.d1_return.value.toFixed(1) + '%' }), el('span', { text: '다음 날 재방문 (앱 실행일 기준)' })),
+        el('div', {}, el('b', { text: K.d1_return.value.toFixed(1) + '%' }), el('span', { text: '다음 날 재방문 (D1)' })),
         el('div', {}, el('b', { text: K.next_week_return.value.toFixed(1) + '%' }), el('span', { text: '다음 주 재방문 (7/18주 → 7/25주)' }))),
-      tableView(['날짜', '방문 DAU', '완료 DAU', '방문 대비 완료', 'D1 재방문'], daily.map(r => [md(r.date), nf.format(r.visit_dau), nf.format(r.complete_dau), pct(r.complete_user_rate), pct(r.d1_return_rate)]))));
+      tableView(['날짜', '방문 DAU', '완료 DAU', '방문 대비 완료', 'D1 재방문'], daily.map(r => [mdw(r.date), nf.format(r.visit_dau), nf.format(r.complete_dau), pct(r.complete_user_rate), pct(r.d1_return_rate)]))));
     lineChart(c6, daily.map(r => ({ x: r.date, y: r.visit_dau, r })), { color: 'aqua', fmt: kfmt, tipLabel: '방문 DAU', yMax: 40000 });
     lineChart(c7, daily.map(r => ({ x: r.date, y: r.complete_dau, r })), {
       color: 'aqua', fmt: kfmt, tipLabel: '완료 DAU', yMax: 8000, extra: p => [[pct(p.r.complete_user_rate), '방문 대비 완료']],
     });
 
     // ===== 가드레일 =====
-    app.append(el('section', {}, ...secHead('t-chip', '가드레일', '참여의 질', '완료만 늘고 실제 투표는 줄지 않는지 보는 지표입니다. 실제 선택 이벤트와 세트 ID가 로그에 없어 아직 계산하지 않습니다.'),
+    app.append(el('section', {}, secHead('t-chip', '가드레일', '참여의 질'),
+      cond(['상태', '실제 선택 이벤트·세트 ID 없음 → 미계산']),
       el('div', { class: 'guard' },
         el('div', { class: 'card' }, el('h3', { text: '⑥ 세트 완료 1건당 실제 투표 수' }), el('div', { class: 'state', text: '⏸ 데이터 수집 필요: 친구 선택 이벤트 + 세트 ID' })),
         el('div', { class: 'card' }, el('h3', { text: '⑦ 0표 완료 비율 (전부 건너뛰고 완료)' }), el('div', { class: 'state', text: '⏸ 데이터 수집 필요: 세트별 실제 선택 수' })))));
   }
 
+  function renderKpis(D) {
+    const K = D.kpi;
+    const wk = weekToDate(LAST);
+    const when = '전주 대비';
+    const wow = key => {
+      const m = METRICS.find(x => x.key === key);
+      const a = agg(m, ...wk.a), b = agg(m, ...wk.b);
+      return el('div', { class: 'wow' }, chip(a && b ? deltaInfo(m, a.v, b.v) : null), el('span', { class: 'when', text: when }));
+    };
+    const frac = k => `${nf.format(k.numerator)} / ${nf.format(k.denominator)}`;
+    const bar = v => { const b = el('div', { class: 'bar' }); const i = el('i'); i.style.width = v + '%'; b.append(i); return b; };
+    const kpi = (k, pill, key) => el('div', { class: 'kpi' },
+      el('div', { class: 'label' }, k.label, pill ? el('span', { class: 'pill', text: pill }) : null),
+      el('div', { class: 'value', text: k.value.toFixed(1) + '%' }), bar(k.value), el('div', { class: 'frac', text: frac(k) }),
+      key ? wow(key) : el('div', { class: 'wow' }, el('span', { class: 'delta na', text: '전주 비교 불가 · 가입 코호트 지표' })));
+    $('#kpis').replaceChildren(
+      el('div', { class: 'kpi hero' },
+        el('div', { class: 'label', text: '핵심 · ' + K.launch_to_complete.label }),
+        el('div', { class: 'value', text: K.launch_to_complete.value.toFixed(1) + '%' }), bar(K.launch_to_complete.value),
+        el('div', { class: 'frac', text: frac(K.launch_to_complete) + ' 사용자×날짜' }),
+        wow('l2c'),
+        el('div', { class: 'why', text: `앱을 켠 날의 ${(100 - K.launch_to_start.value).toFixed(1)}%는 투표를 시작하지 않음 → 가장 큰 이탈 구간` })),
+      kpi(K.launch_to_start, '가장 큰 병목', 'l2s'), kpi(K.open_start_10m, 'BEST 1', 'o10'), kpi(K.aha_rate, '아하 · BEST 3', null));
+  }
+
+  // =====================================================================
+  // 탭
+  // =====================================================================
+  const TABS = [['main', '전체 현황'], ['wow', '전주 대비'], ['dod', '전일 대비'], ['custom', '기간 설정']];
+  function showTab(id) {
+    if (!TABS.some(t => t[0] === id)) id = 'main';
+    $('#tabs').querySelectorAll('button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.id === id)));
+    const main = id === 'main';
+    $('#kpis').hidden = !main; $('#app').hidden = !main; $('#compare').hidden = main;
+    const host = $('#compare');
+    if (id === 'wow') {
+      const wk = weekToDate(LAST);
+      renderCompare(host, wk.a, wk.b, ['이번 주', '전주'],
+        el('div', { class: 'rule', style: 'margin-top:24px', text: `주 = 월~일 고정. 최신 데이터일(${mdw(LAST)}) 기준으로 이번 주 월요일부터와 전주 같은 요일까지를 비교` }));
+    } else if (id === 'dod') {
+      renderCompare(host, [LAST, LAST], [addDays(LAST, -1), addDays(LAST, -1)], ['최신일', '전일']);
+    } else if (id === 'custom') {
+      renderCustom(host);
+    }
+    if (location.hash.slice(1) !== id) history.replaceState(null, '', '#' + id);
+  }
+
+  function render(D) {
+    DAILY = D.daily; DAILY.forEach(r => { BYDATE[r.date] = r; });
+    FIRST = DAILY[0].date; LAST = DAILY[DAILY.length - 1].date;
+    $('#meta').append(
+      el('span', { text: `KPI 기간 ${md(D.meta.kpi_period[0])}~${md(D.meta.kpi_period[1])} · A/B 테스트 전 기준값` }),
+      el('span', { text: `최신 데이터일 ${mdw(LAST)}` }),
+      (() => { const wk = weekToDate(LAST); return el('span', { text: `전주 대비 = ${rangeText(...wk.a)} vs ${rangeText(...wk.b)}` }); })(),
+      el('span', { text: `갱신 ${D.meta.generated_at.replace('T', ' ').slice(0, 16)} KST` }));
+    TABS.forEach(([id, label]) => {
+      const b = el('button', { type: 'button', role: 'tab', 'data-id': id, text: label });
+      b.addEventListener('click', () => showTab(id));
+      $('#tabs').append(b);
+    });
+    renderKpis(D);
+    renderMain(D);
+    showTab(location.hash.slice(1) || 'main');
+    window.addEventListener('hashchange', () => showTab(location.hash.slice(1)));
+  }
+
   fetch('data.json', { cache: 'no-store' })
     .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then(render)
-    .catch(e => { $('#app').replaceChildren(el('div', { class: 'err', text: `data.json을 불러오지 못했습니다 (${e.message}). 로컬에서는 docs 폴더에서 간단한 웹 서버로 열어야 합니다.` })); });
+    .catch(e => { $('#app').replaceChildren(el('div', { class: 'err', text: `data.json을 불러오지 못했습니다 (${e.message}). 로컬에서는 docs 폴더에서 간단한 웹 서버로 열어야 합니다.` })); console.error(e); });
 })();
 </script>
 </body>

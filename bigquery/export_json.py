@@ -71,7 +71,7 @@ data = {
         SELECT k.event_date AS date, k.visit_dau, k.complete_dau, k.complete_user_rate,
           f.n_launch, f.n_start, f.n_complete,
           SAFE_DIVIDE(f.n_start, f.n_launch) AS launch_to_start, SAFE_DIVIDE(f.n_complete, f.n_launch) AS launch_to_complete,
-          SAFE_DIVIDE(f.d1_return, f.d1_base) AS d1_return_rate,
+          f.d1_base, f.d1_return, SAFE_DIVIDE(f.d1_return, f.d1_base) AS d1_return_rate,
           o.n_open_users, o.n_start_10m, o.start_10m_rate,
           r.n_complete_users, r.n_recomplete_7d, r.recomplete_7d_rate
         FROM mart.kpi_daily k
