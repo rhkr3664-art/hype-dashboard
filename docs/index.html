@@ -755,7 +755,7 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
       ['gblk', '8', '차단 사용자 비율', '활동 사용자×날짜 중 차단 1회 이상', '참여 증가와 함께 관계 불편이 느는지', D.guardrail.block_users],
     ];
     const gHosts = [];
-    body.append(el('section', {}, secHead('t-chip', '가드레일', '참여가 늘 때 나빠지면 안 되는 것'),
+    body.append(el('section', {}, secHead('t-chip', '가드레일', '참여가 늘어도 사용자 경험은 괜찮은가'),
       cond(['단위', '사용자×날짜'], ['기간', cmp ? `${rangeText(...v.A)} vs ${rangeText(...v.B)}` : '7/25~8/10']),
       el('div', { class: 'grid3' }, GUARDS.map(([key, n, title, def, why, g]) => {
         const m = M(key), host = el('div', { class: 'chart' });
