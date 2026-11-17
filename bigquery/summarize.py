@@ -11,7 +11,8 @@ import sys, os, re, json, pathlib, datetime as dt, urllib.request, urllib.error
 sys.stdout.reconfigure(encoding='utf-8')
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PATH = ROOT / 'docs' / 'data.json'
-MODEL = os.environ.get('GEMINI_MODEL', 'gemini-flash-latest')   # 최신 Flash 별칭 (없으면 사용 가능한 Flash 모델 자동 선택)
+# 차례로 시도할 모델 (2026-11 진단: flash-lite-latest 6초 응답 / flash-latest는 503 혼잡 / 2.5 계열은 신규 사용자 불가)
+MODELS = [m for m in os.environ.get('GEMINI_MODEL', '').split(',') if m] or ['gemini-flash-lite-latest', 'gemini-4-hydrogen', 'gemini-flash-latest']
 API = 'https://generativelanguage.googleapis.com/v1beta'
 RATE_PP, COUNT_PCT, REL_PCT = 1.0, 5, 50   # 대시보드와 같은 증감 기준
 
@@ -111,51 +112,32 @@ def _call(method, url, key, payload=None, timeout=240):
         raise RuntimeError(f'HTTP {e.code}: {e.read().decode(errors="replace")[:300]}') from None
 
 
-def pick_model(key):
-    """MODEL 별칭이 없을 때: 키로 쓸 수 있는 모델 목록에서 고른다.
-    1순위 hydrogen(AI Studio 기본 무료 모델, 2026-11 기준) → 2순위 Flash 계열 최신."""
-    names = [m['name'].split('/')[-1] for m in _call('GET', f'{API}/models?pageSize=200', key).get('models', [])
-             if 'generateContent' in m.get('supportedGenerationMethods', [])]
-    ok = lambda n: not any(x in n for x in ('lite', 'image', 'tts', 'audio', 'embed', 'preview'))
-    for word in ('hydrogen', 'flash'):
-        cand = sorted(n for n in names if word in n and ok(n))
-        if cand:
-            return cand[-1]
-    raise RuntimeError(f'쓸 수 있는 모델을 못 찾음: {names[:15]}')
-
-
 def ask_llm(F):
     key = os.environ.get('GEMINI_API_KEY')
     if not key:
         raise RuntimeError('GEMINI_API_KEY 없음 (GitHub Secret 등록 필요)')
-    # 생각(thinking) 단계를 낮게 해서 응답을 빠르게 (지원 안 하는 모델이면 빼고 다시 요청)
-    cfg = {'temperature': 0.2, 'thinkingConfig': {'thinkingLevel': 'low'}}
-    payload = lambda: {'contents': [{'role': 'user', 'parts': [{'text': PROMPT + json.dumps(F, ensure_ascii=False, indent=1)}]}],
-                       'generationConfig': cfg}
-    model, last = MODEL, None
-    for attempt in range(4):
-        t0 = dt.datetime.now()
-        try:
-            res = _call('POST', f'{API}/models/{model}:generateContent', key, payload())
-            print(f'Gemini 응답: {model}, {(dt.datetime.now() - t0).seconds}초')
-            break
-        except Exception as e:
-            last, msg = e, str(e)
-            print(f'시도 {attempt + 1} 실패 ({model}, {(dt.datetime.now() - t0).seconds}초): {msg[:200]}')
-            if 'API_KEY' in msg:
-                raise
-            if 'thinking' in msg.lower() and 'thinkingConfig' in cfg:
-                cfg.pop('thinkingConfig')
-            elif 'HTTP 404' in msg or ('HTTP 400' in msg and model == MODEL):
-                model = pick_model(key); print(f'→ {model} 모델로 다시 시도')
-            elif 'timed out' not in msg and 'HTTP 5' not in msg and 'HTTP 429' not in msg:
-                raise
-    else:
-        raise RuntimeError(f'4번 시도 모두 실패: {last}')
-    try:
-        return ''.join(p.get('text', '') for p in res['candidates'][0]['content']['parts'] if not p.get('thought')), model
-    except (KeyError, IndexError):
-        raise RuntimeError(f'응답에 요약이 없음: {json.dumps(res, ensure_ascii=False)[:300]}')
+    text = PROMPT + json.dumps(F, ensure_ascii=False, indent=1)
+    errors = []
+    for model in MODELS:   # 모델마다 최대 90초, 안 되면 다음 모델로
+        cfg = {'temperature': 0.2, 'thinkingConfig': {'thinkingLevel': 'low'}}
+        for _ in range(2):
+            t0 = dt.datetime.now()
+            try:
+                res = _call('POST', f'{API}/models/{model}:generateContent', key,
+                            {'contents': [{'role': 'user', 'parts': [{'text': text}]}], 'generationConfig': cfg}, timeout=90)
+                out = ''.join(p.get('text', '') for p in res['candidates'][0]['content']['parts'] if not p.get('thought'))
+                print(f'Gemini 응답: {model}, {(dt.datetime.now() - t0).seconds}초')
+                return out, model
+            except Exception as e:
+                msg = str(e)
+                print(f'{model} 실패 ({(dt.datetime.now() - t0).seconds}초): {msg[:160]}')
+                if 'API_KEY' in msg:
+                    raise
+                if 'thinking' in msg.lower() and 'thinkingConfig' in cfg:
+                    cfg.pop('thinkingConfig'); continue   # 생각 설정을 지원 안 하는 모델 → 빼고 한 번 더
+                errors.append(f'{model}: {msg[:80]}')
+                break
+    raise RuntimeError('모든 모델 실패 — ' + ' / '.join(errors))
 
 
 def to_lines(text):
