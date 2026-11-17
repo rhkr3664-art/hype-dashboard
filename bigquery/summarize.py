@@ -80,12 +80,31 @@ def allowed_numbers(F):
     return nums | {'7', '3'}   # '직전 7일', '3줄' 같은 표현 허용
 
 
+# 지표 이름 → 문장에서 찾을 단어 (방향 검증용)
+KEYWORDS = {'세트 완료율 (핵심)': ('완료율',), '투표 시작률': ('시작률',), '10분': ('10분',), 'DAU': ('DAU', '방문'),
+            '공유': ('공유',), '신고': ('신고',), '차단': ('차단',)}
+UP, DOWN = ('올랐', '증가', '상승', '늘었', '늘어'), ('내렸', '감소', '하락', '줄었', '줄어', '떨어')
+
+
 def check(lines, F):
     if len(lines) != 3:
         return f'줄 수가 3이 아님 ({len(lines)}줄)'
     ok = allowed_numbers(F)
     bad = [n for l in lines for n in NUM.findall(l) if n.replace(',', '') not in ok]
-    return f'데이터에 없는 숫자: {bad}' if bad else None
+    if bad:
+        return f'데이터에 없는 숫자: {bad}'
+    # 방향 검증: '크게 오름/내림' 지표는 반드시 언급하고, 그 문장에 맞는 방향 표현이 있어야 함
+    for m in F['지표']:
+        if not m['판정'].startswith('크게'):
+            continue
+        words = next(v for k, v in KEYWORDS.items() if k in m['지표'])
+        hit = [l for l in lines if any(w in l for w in words) and m['직전 7일'] in l] or               [l for l in lines if any(w in l for w in words)]
+        if not hit:
+            return f"'{m['지표']}'({m['판정']})를 언급하지 않음"
+        need = UP if m['판정'] == '크게 오름' else DOWN
+        if not any(any(w in l for w in need) for l in hit):
+            return f"'{m['지표']}'는 {m['판정']}인데 문장에 방향 표현({need[0]}/{need[1]})이 없음"
+    return None
 
 
 PROMPT = """너는 익명 투표 앱 서비스 현황 대시보드의 요약을 쓰는 데이터 분석가야.
@@ -96,6 +115,9 @@ PROMPT = """너는 익명 투표 앱 서비스 현황 대시보드의 요약을 
 - 1줄: 핵심 지표(앱 실행 → 세트 완료율) 변화. 2줄: 나머지 참여 지표 중 눈에 띄는 것. 3줄: 가드레일(공유·신고·차단)이 괜찮은지.
 - 숫자는 JSON에 있는 값을 그대로 옮겨 써. 계산하거나 반올림하거나 새 숫자를 만들지 마.
 - '판정'이 '기준 안 변화'면 '거의 그대로'라고 쓰고 과장하지 마. 원인은 추측하지 마.
+- '판정'이 '크게 오름'·'크게 내림'인 지표는 반드시 언급하고 '올랐습니다'·'내렸습니다'로 방향을 분명히 써.
+  가드레일 지표가 크게 오르거나 내렸으면 '안정적'·'괜찮다'고 쓰지 마.
+- 맞춤법을 지켜.
 - 한 줄은 60자 안팎, 쉬운 말로.
 
 데이터
@@ -155,13 +177,20 @@ def main():
             m = F['지표']
             text = '\n'.join([f"1. 핵심 세트 완료율은 {m[0]['직전 7일']}로 그 전 7일({m[0]['그 전 7일']})과 비교해 {m[0]['변화']}예요.",
                               f"- 투표 시작률은 {m[1]['직전 7일']}, 10분 내 시작률은 {m[2]['직전 7일']}예요.",
-                              '공유·신고·차단은 기준 안이라 사용자 경험은 괜찮아요.'])
+                              f"방문 DAU는 {m[3]['직전 7일']}로 올랐고, 공유 이용률은 {m[4]['직전 7일']}로 내렸어요."])
         else:
             text, used = ask_llm(F)
         lines = to_lines(text)
         err = check(lines, F)
+        for retry in range(2):   # 검증에 걸리면 최대 2번 다시 쓰게 함
+            if not err or mock:
+                break
+            print(f'검증 실패 → 다시 작성 ({retry + 1}): {err}')
+            text, used = ask_llm(F)
+            lines = to_lines(text)
+            err = check(lines, F)
         if err:
-            raise ValueError(f'검증 실패 → 저장 안 함: {err}\n응답: {text}')
+            raise ValueError(f'검증 실패 → 저장 안 함: {err} / 응답: {text}')
         D['summary'] = {
             'lines': lines, 'model': 'mock' if mock else used,
             'period_a': F['직전 7일'], 'period_b': F['그 전 7일'],
