@@ -1,6 +1,8 @@
-"""docs/data.json의 전주 대비 변화를 LLM(GitHub Models)이 3줄로 요약해 data.json의 'summary'에 저장한다.
-사용: python bigquery/summarize.py              → GitHub Actions에서 실행 (GITHUB_TOKEN 필요, workflow에 models: read 권한)
+"""docs/data.json의 전주 대비 변화를 LLM(Google Gemini API 무료 등급)이 3줄로 요약해 data.json의 'summary'에 저장한다.
+사용: python bigquery/summarize.py              → GitHub Actions에서 실행 (Secret GEMINI_API_KEY 필요)
       python bigquery/summarize.py --mock       → API 호출 없이 가짜 응답으로 검증 로직만 시험
+키는 Google AI Studio(aistudio.google.com)에서 발급. 결제(billing)를 연결하지 않아야 무료 등급으로 유지된다.
+(GitHub Models는 2026-07-30 종료되어 Gemini로 교체)
 
 전주 대비 = 최신 데이터일까지 직전 7일 vs 그 전 7일 (대시보드 KPI 배지와 같은 계산).
 안전장치: 요약에 나온 숫자가 우리가 넘긴 숫자 목록에 하나라도 없으면 저장하지 않는다 (AI가 숫자를 지어내는 것 방지).
@@ -9,8 +11,8 @@ import sys, os, re, json, pathlib, datetime as dt, urllib.request, urllib.error
 sys.stdout.reconfigure(encoding='utf-8')
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PATH = ROOT / 'docs' / 'data.json'
-MODEL = 'openai/gpt-4.1-mini'
-URL = 'https://models.github.ai/inference/chat/completions'
+MODEL = os.environ.get('GEMINI_MODEL', 'gemini-flash-latest')   # 최신 Flash 별칭 (없으면 사용 가능한 Flash 모델 자동 선택)
+API = 'https://generativelanguage.googleapis.com/v1beta'
 RATE_PP, COUNT_PCT, REL_PCT = 1.0, 5, 50   # 대시보드와 같은 증감 기준
 
 # 대시보드 METRICS와 같은 정의 (num/den 합으로 비율, avg는 일평균)
@@ -99,17 +101,44 @@ PROMPT = """너는 익명 투표 앱 서비스 현황 대시보드의 요약을 
 """
 
 
+def _call(method, url, key, payload=None):
+    req = urllib.request.Request(url, method=method, headers={'x-goog-api-key': key, 'Content-Type': 'application/json'},
+                                 data=json.dumps(payload).encode() if payload is not None else None)
+    try:
+        with urllib.request.urlopen(req, timeout=90) as r:
+            return json.loads(r.read())
+    except urllib.error.HTTPError as e:
+        raise RuntimeError(f'HTTP {e.code}: {e.read().decode(errors="replace")[:300]}') from None
+
+
+def pick_model(key):
+    """MODEL 별칭이 없어졌을 때: generateContent를 지원하는 Flash 모델 중 이름순 마지막(보통 최신)을 고른다."""
+    names = [m['name'].split('/')[-1] for m in _call('GET', f'{API}/models?pageSize=200', key).get('models', [])
+             if 'generateContent' in m.get('supportedGenerationMethods', [])]
+    flash = sorted(n for n in names if 'flash' in n and 'lite' not in n and 'image' not in n and 'tts' not in n)
+    if not flash:
+        raise RuntimeError(f'사용 가능한 Flash 모델 없음: {names[:10]}')
+    return flash[-1]
+
+
 def ask_llm(F):
-    token = os.environ.get('GITHUB_TOKEN')
-    if not token:
-        raise RuntimeError('GITHUB_TOKEN 없음')
-    body = json.dumps({'model': MODEL, 'temperature': 0.2, 'messages': [
-        {'role': 'user', 'content': PROMPT + json.dumps(F, ensure_ascii=False, indent=1)}]}).encode()
-    req = urllib.request.Request(URL, data=body, headers={
-        'Authorization': f'Bearer {token}', 'Content-Type': 'application/json',
-        'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28'})
-    with urllib.request.urlopen(req, timeout=60) as r:
-        return json.loads(r.read())['choices'][0]['message']['content']
+    key = os.environ.get('GEMINI_API_KEY')
+    if not key:
+        raise RuntimeError('GEMINI_API_KEY 없음 (GitHub Secret 등록 필요)')
+    payload = {'contents': [{'role': 'user', 'parts': [{'text': PROMPT + json.dumps(F, ensure_ascii=False, indent=1)}]}],
+               'generationConfig': {'temperature': 0.2}}
+    model = MODEL
+    try:
+        res = _call('POST', f'{API}/models/{model}:generateContent', key, payload)
+    except RuntimeError as e:
+        if 'HTTP 404' not in str(e):
+            raise
+        model = pick_model(key); print(f'{MODEL} 없음 → {model} 사용')
+        res = _call('POST', f'{API}/models/{model}:generateContent', key, payload)
+    try:
+        return ''.join(p.get('text', '') for p in res['candidates'][0]['content']['parts']), model
+    except (KeyError, IndexError):
+        raise RuntimeError(f'응답에 요약이 없음: {json.dumps(res, ensure_ascii=False)[:300]}')
 
 
 def to_lines(text):
@@ -129,21 +158,20 @@ def main():
                               f"- 투표 시작률은 {m[1]['직전 7일']}, 10분 내 시작률은 {m[2]['직전 7일']}예요.",
                               '공유·신고·차단은 기준 안이라 사용자 경험은 괜찮아요.'])
         else:
-            text = ask_llm(F)
+            text, used = ask_llm(F)
         lines = to_lines(text)
         err = check(lines, F)
         if err:
             raise ValueError(f'검증 실패 → 저장 안 함: {err}\n응답: {text}')
         D['summary'] = {
-            'lines': lines, 'model': 'mock' if mock else MODEL,
+            'lines': lines, 'model': 'mock' if mock else used,
             'period_a': F['직전 7일'], 'period_b': F['그 전 7일'],
             'generated_at': dt.datetime.now(dt.timezone(dt.timedelta(hours=9))).isoformat(timespec='seconds'),
             'verified': True,
         }
         print('요약 저장:'); [print('  ' + l) for l in lines]
     except (Exception) as e:
-        detail = e.read().decode(errors='replace')[:300] if isinstance(e, urllib.error.HTTPError) else ''
-        print(f'::warning::AI 요약 건너뜀 — {e} {detail}')
+        print(f'::warning::AI 요약 건너뜀 — {e}')
     PATH.write_text(json.dumps(D, ensure_ascii=False, indent=2), encoding='utf-8')
 
 
