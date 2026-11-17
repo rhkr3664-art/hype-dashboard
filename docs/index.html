@@ -751,7 +751,7 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
     const bar = $('#viewbar');
     const tabs = el('div', { class: 'seg', role: 'tablist', 'aria-label': '본문 보기' });
     const extra = el('div');
-    const MODES = [['all', '전체 기간'], ['wow', '전주 대비'], ['dod', '전일 대비'], ['custom', '기간 설정']];
+    const MODES = [['all', '전체 현황'], ['wow', '전주 대비'], ['dod', '전일 대비'], ['custom', '기간 설정']];
     const sync = () => {
       tabs.querySelectorAll('button').forEach(b => { const on = b.dataset.id === VIEW; b.setAttribute('aria-pressed', String(on)); b.setAttribute('aria-selected', String(on)); });
       extra.replaceChildren();
