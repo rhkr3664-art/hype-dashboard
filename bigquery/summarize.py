@@ -112,13 +112,16 @@ def _call(method, url, key, payload=None):
 
 
 def pick_model(key):
-    """MODEL 별칭이 없어졌을 때: generateContent를 지원하는 Flash 모델 중 이름순 마지막(보통 최신)을 고른다."""
+    """MODEL 별칭이 없을 때: 키로 쓸 수 있는 모델 목록에서 고른다.
+    1순위 hydrogen(AI Studio 기본 무료 모델, 2026-11 기준) → 2순위 Flash 계열 최신."""
     names = [m['name'].split('/')[-1] for m in _call('GET', f'{API}/models?pageSize=200', key).get('models', [])
              if 'generateContent' in m.get('supportedGenerationMethods', [])]
-    flash = sorted(n for n in names if 'flash' in n and 'lite' not in n and 'image' not in n and 'tts' not in n)
-    if not flash:
-        raise RuntimeError(f'사용 가능한 Flash 모델 없음: {names[:10]}')
-    return flash[-1]
+    ok = lambda n: not any(x in n for x in ('lite', 'image', 'tts', 'audio', 'embed', 'preview'))
+    for word in ('hydrogen', 'flash'):
+        cand = sorted(n for n in names if word in n and ok(n))
+        if cand:
+            return cand[-1]
+    raise RuntimeError(f'쓸 수 있는 모델을 못 찾음: {names[:15]}')
 
 
 def ask_llm(F):
@@ -131,7 +134,7 @@ def ask_llm(F):
     try:
         res = _call('POST', f'{API}/models/{model}:generateContent', key, payload)
     except RuntimeError as e:
-        if 'HTTP 404' not in str(e):
+        if 'HTTP 404' not in str(e) and 'HTTP 400' not in str(e) or 'API_KEY' in str(e):
             raise
         model = pick_model(key); print(f'{MODEL} 없음 → {model} 사용')
         res = _call('POST', f'{API}/models/{model}:generateContent', key, payload)
