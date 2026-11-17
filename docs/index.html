@@ -23,7 +23,7 @@
   --orange: #eb6834; --orange-wash: rgba(235,104,52,0.10); --orange-soft: #fdeee6;
   --aqua: #1baf7a;   --aqua-wash: rgba(27,175,122,0.10);   --aqua-soft: #e3f6ee;
   /* 비교 기간 막대: 이번 기간 = 진한 남보라, 비교 기간 = 회색 */
-  --cur: #3a2d9c; --base: #c3c2b7; --prev: #6b6a66; /* 이전(비교) 기간 글자: 진한 회색 */
+  --cur: #3a2d9c; --base: #c3c2b7; --prev: #9a9993; /* 이전(비교) 기간 글자: 중간 회색 */
   /* 증감 표시: 오름 = 빨강, 내림 = 파랑, 기준 안 = 회색 (항상 ▲▼ 기호와 함께) */
   --up: #d03b3b; --up-soft: #fbe9e9; --down: #1c5cab; --down-soft: #e3edfb; --flat: #6b6a66; --flat-soft: #f0efec;
   --hero-from: #1b1650; --hero-mid: #3a2d9c; --hero-to: #7a3fb8;
@@ -36,7 +36,7 @@
     --blue: #3987e5; --blue-wash: rgba(57,135,229,0.16); --blue-soft: rgba(57,135,229,0.16);
     --orange: #d95926; --orange-wash: rgba(217,89,38,0.16); --orange-soft: rgba(217,89,38,0.18);
     --aqua: #199e70; --aqua-wash: rgba(25,158,112,0.16); --aqua-soft: rgba(25,158,112,0.18);
-    --cur: #9085e9; --base: #5a5955; --prev: #b0afa8;
+    --cur: #9085e9; --base: #5a5955; --prev: #8f8e88;
     --up: #ef7676; --up-soft: rgba(208,59,59,0.22); --down: #6da7ec; --down-soft: rgba(57,135,229,0.22); --flat: #b0afa8; --flat-soft: #2c2c2a;
     --hero-from: #120f38; --hero-mid: #2a2075; --hero-to: #55308a;
   }
@@ -48,7 +48,7 @@
   --blue: #3987e5; --blue-wash: rgba(57,135,229,0.16); --blue-soft: rgba(57,135,229,0.16);
   --orange: #d95926; --orange-wash: rgba(217,89,38,0.16); --orange-soft: rgba(217,89,38,0.18);
   --aqua: #199e70; --aqua-wash: rgba(25,158,112,0.16); --aqua-soft: rgba(25,158,112,0.18);
-  --cur: #9085e9; --base: #5a5955; --prev: #b0afa8;
+  --cur: #9085e9; --base: #5a5955; --prev: #8f8e88;
   --up: #ef7676; --up-soft: rgba(208,59,59,0.22); --down: #6da7ec; --down-soft: rgba(57,135,229,0.22); --flat: #b0afa8; --flat-soft: #2c2c2a;
   --hero-from: #120f38; --hero-mid: #2a2075; --hero-to: #55308a;
 }
@@ -401,6 +401,7 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
         for (const n of [hitR, path]) { n.addEventListener('pointermove', on); n.addEventListener('pointerleave', off); }
         path.addEventListener('focus', on); path.addEventListener('blur', off);
         svg.append(hitR, path);
+        const v = s('text', { x: cx, y: Y(r.aha_rate) - 5, 'text-anchor': 'middle', class: 'vlabel' }); v.textContent = pct(r.aha_rate, 0); svg.append(v);
         const t = s('text', { x: cx, y: H - 22, 'text-anchor': 'middle' }); t.textContent = md(r.signup_day); svg.append(t);
         const n = s('text', { x: cx, y: H - 6, 'text-anchor': 'middle' }); n.textContent = `n=${r.n_new_users}`; svg.append(n);
       });
@@ -603,7 +604,7 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
       if (i) {
         const ca = st.a / steps[i - 1].a, cb = st.b / steps[i - 1].b;
         box.append(el('div', { class: 'step' }, el('span'), el('div', { class: 'conv' },
-          el('span', { text: `↓ ${pct(ca)} 이어짐` }), el('span', { style: 'color:var(--muted)', text: `(${v.labels[1]} ${pct(cb)})` }), chip(deltaInfo(rateM, ca, cb)))));
+          el('span', { text: `↓ ${pct(ca)} 전환` }), el('span', { style: 'color:var(--muted)', text: `(${v.labels[1]} ${pct(cb)})` }), chip(deltaInfo(rateM, ca, cb)))));
       }
       const fa = el('div'), fb = el('div');
       fa.style.cssText = `width:${st.a / a0 * 100}%;background:var(--cur)`; fb.style.cssText = `width:${st.b / b0 * 100}%;background:var(--base)`;
@@ -716,7 +717,7 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
       cmp ? pairBlock(M('rc7'), v) : c5,
       cmp ? null : tableView(['날짜', '완료 사용자', '7일 내 재완료', '재완료율'], rd.map(r => [mdw(r.date), nf.format(r.n_complete_users), nf.format(r.n_recomplete_7d), pct(r.recomplete_7d_rate)])));
     body.append(el('section', {}, secHead('t-orange', '아하모먼트', '두 번째 완료까지 가는가'),
-      cond(['아하모먼트', '가입 후 7일 안 세트 2회 이상 완료'], ['대상', `7/18~7/27 신규 가입자 ${nf.format(K.aha_rate.denominator)}명`], ['관련 개선안', 'BEST 3']),
+      cond(['아하모먼트', '가입 후 7일 안 세트 2회 이상 완료'], ['대상', `7/18~7/27 신규 가입자 ${nf.format(K.aha_rate.denominator)}명`]),
       el('div', { class: 'grid2' }, card4, card5)));
     columnChart(c4, A.by_signup_day, K.aha_rate.value / 100);
     if (!cmp) lineChart(c5, rd.map(r => ({ x: r.date, y: r.recomplete_7d_rate, r })), {
@@ -783,7 +784,7 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
     let wi = 1; for (let i = 2; i < steps.length; i++) if (steps[i].n / steps[i - 1].n < steps[wi].n / steps[wi - 1].n) wi = i;
     steps.forEach((st, i) => {
       if (i) host.append(el('div', { class: 'frow' }, el('span'), el('div', { class: 'conv' },
-        '↓ ', el('b', { text: pct(st.n / steps[i - 1].n) }), ' 이어짐', i === wi ? el('span', { class: 'worst', text: '가장 큰 감소' }) : null)));
+        '↓ ', el('b', { text: pct(st.n / steps[i - 1].n) }), ' 전환', i === wi ? el('span', { class: 'worst', text: '가장 큰 감소' }) : null)));
       const f = el('div', { class: 'fill' }); f.style.width = (st.n / n0 * 100) + '%';
       const row = el('div', { class: 'frow', tabindex: 0 }, el('div', { class: 'name', text: st.step }), el('div', { class: 'bar' }, f), el('div', { class: 'val', text: nf.format(st.n) }));
       const rows = () => [[nf.format(st.n), st.step, true], [pct(st.n / n0), '앱 실행 대비'], ...(i ? [[pct(st.n / steps[i - 1].n), '전 단계 대비']] : [])];
