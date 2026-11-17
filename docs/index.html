@@ -765,7 +765,7 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
       const v = viewOf(VIEW);
       periodLine.replaceChildren(...(v
         ? [el('span', {}, swatch('var(--cur)'), el('b', { text: v.labels[0] + ' ' }), rangeText(...v.A)), el('span', { text: 'vs' }),
-           el('span', {}, swatch('var(--base)'), el('b', { text: v.labels[1] + ' ' }), rangeText(...v.B)), ruleLine()]
+           el('span', {}, swatch('var(--base)'), el('b', { text: v.labels[1] + ' ' }), rangeText(...v.B))]
         : [el('span', { text: `전체 기간 추이 · 최신 데이터일 ${mdw(LAST)}` })]));
     };
     MODES.forEach(([id, label]) => {
