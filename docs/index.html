@@ -763,21 +763,45 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
     });
   }
 
+  // 깔때기: 단계마다 가운데 정렬 막대(폭 = 앱 실행 대비), 단계 사이는 연한 사다리꼴로 이어 줌
   function funnel(host, steps) {
-    host.replaceChildren();
     const n0 = steps[0].n;
     let wi = 1; for (let i = 2; i < steps.length; i++) if (steps[i].n / steps[i - 1].n < steps[wi].n / steps[wi - 1].n) wi = i;
-    steps.forEach((st, i) => {
-      if (i) host.append(el('div', { class: 'frow' }, el('span'), el('div', { class: 'conv' },
-        '↓ ', el('b', { text: pct(st.n / steps[i - 1].n) }), ' 이어짐', i === wi ? el('span', { class: 'worst', text: '가장 큰 감소' }) : null)));
-      const f = el('div', { class: 'fill' }); f.style.width = (st.n / n0 * 100) + '%';
-      const row = el('div', { class: 'frow', tabindex: 0 }, el('div', { class: 'name', text: st.step }), el('div', { class: 'bar' }, f), el('div', { class: 'val', text: nf.format(st.n) }));
-      const rows = () => [[nf.format(st.n), st.step, true], [pct(st.n / n0), '앱 실행 대비'], ...(i ? [[pct(st.n / steps[i - 1].n), '전 단계 대비']] : [])];
-      row.addEventListener('pointermove', e => showTip(e, rows()));
-      row.addEventListener('focus', e => showTip(e, rows()));
-      row.addEventListener('pointerleave', hideTip); row.addEventListener('blur', hideTip);
-      host.append(row);
-    });
+    const T = (x, y, txt, style, anchor = 'start') => { const t = s('text', { x, y, 'text-anchor': anchor, style: 'font-size:12.5px;' + style }); t.textContent = txt; return t; };
+    const draw = () => {
+      host.replaceChildren();
+      if (host.clientWidth === 0) return;
+      // 왼쪽: 단계 이름 / 가운데: 깔때기 / 오른쪽: 인원·전환율
+      const W = Math.max(300, host.clientWidth), SEG = 46, GAP = 2, nameW = 92, rightW = 118;
+      const H = steps.length * (SEG + GAP);
+      const fx0 = nameW + 6, fw = W - nameW - rightW - 12, cx = fx0 + fw / 2;
+      const wOf = n => Math.max(fw * 0.1, fw * n / n0);
+      const svg = s('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': '퍼널 깔때기: ' + steps.map(st => `${st.step} ${nf.format(st.n)}`).join(', ') });
+      steps.forEach((st, i) => {
+        const y = i * (SEG + GAP), top = wOf(st.n), bot = i < steps.length - 1 ? wOf(steps[i + 1].n) : top * 0.85;
+        // 한 단계 = 윗변(이 단계) → 아랫변(다음 단계) 사다리꼴. 단계 사이는 2px 틈
+        const seg = s('path', { class: 'col', fill: 'var(--blue)', tabindex: 0,
+          d: `M${cx - top / 2},${y}L${cx + top / 2},${y}L${cx + bot / 2},${y + SEG}L${cx - bot / 2},${y + SEG}Z` });
+        const midY = y + SEG / 2 + 4;
+        const inside = Math.min(top, bot) > 64;
+        svg.append(seg,
+          T(nameW, i === wi ? midY - 7 : midY, st.step, 'fill:var(--ink)', 'end'),
+          T(cx, midY, inside ? pct(st.n / n0) : '', 'fill:#fff;font-weight:700', 'middle'),
+          T(fx0 + fw + 10, y + SEG / 2 - 3, nf.format(st.n), 'fill:var(--ink);font-weight:700'),
+          T(fx0 + fw + 10, y + SEG / 2 + 13, i ? `전 단계의 ${pct(st.n / steps[i - 1].n)}` : '시작', 'fill:var(--muted);font-size:11.5px'));
+        if (i === wi) svg.append(T(nameW, midY + 9, '가장 큰 감소', 'fill:var(--ink-2);font-weight:700;font-size:11px', 'end'));
+        const rows = () => [[nf.format(st.n), st.step, true], [pct(st.n / n0), '앱 실행 대비'], ...(i ? [[pct(st.n / steps[i - 1].n), '전 단계 대비']] : [])];
+        const hit = s('rect', { x: 0, y, width: W, height: SEG, fill: 'transparent' });
+        const on = e => { seg.classList.add('on'); showTip(e, rows()); }, off = () => { seg.classList.remove('on'); hideTip(); };
+        for (const n of [hit, seg]) { n.addEventListener('pointermove', on); n.addEventListener('pointerleave', off); }
+        seg.addEventListener('focus', on); seg.addEventListener('blur', off);
+        svg.insertBefore(hit, svg.firstChild);
+      });
+      host.append(svg);
+    };
+    draw();
+    if (host._ro) host._ro.disconnect();   // 기본 ↔ 확장 전환 시 예전 그림이 다시 그려지지 않게
+    host._ro = new ResizeObserver(() => draw()); host._ro.observe(host);
   }
 
   // 보기 탭 (본문 맨 위, 스크롤해도 따라옴)
