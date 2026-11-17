@@ -91,6 +91,12 @@ body {
 .fcmp .nums span { display: block; color: var(--muted); }
 .fcmp .conv { grid-column: 2 / 4; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 0 0 4px; }
 
+/* AI 요약 박스 (meta 칩과 KPI 사이) */
+.ai { margin-top: 16px; background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.16); border-radius: 16px; padding: 14px 18px; }
+.ai .head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; font-weight: 650; }
+.ai .tag { font-size: 11px; font-weight: 700; border-radius: 999px; padding: 1px 8px; background: linear-gradient(135deg, #ff8ac2, #ffb36b); color: #1b1650; }
+.ai .src { font-size: 12px; font-weight: 400; color: rgba(255,255,255,0.62); }
+.ai ol { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 3px; font-size: 14px; line-height: 1.5; color: rgba(255,255,255,0.95); }
 .kpis { display: grid; grid-template-columns: 1.3fr repeat(3, 1fr); gap: 14px; margin-top: 20px; }
 @media (max-width: 860px) { .kpis { grid-template-columns: 1fr 1fr; } .kpis .hero { grid-column: 1 / -1; } }
 .kpi { background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.16); border-radius: 16px; padding: 16px 18px; }
@@ -241,6 +247,7 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
   <div class="wrap">
     <div class="brand"><div class="logo" aria-hidden="true">?</div><h1>익명 투표 앱 서비스 현황</h1></div>
     <div class="meta" id="meta"></div>
+    <div class="ai" id="ai" hidden></div>
     <div class="kpis" id="kpis"></div>
   </div>
 </div>
@@ -872,6 +879,16 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
       el('span', { text: `최신 데이터일 ${mdw(LAST)}` }),
       (() => { const wk = weekToDate(LAST); return el('span', { text: `KPI 전주 대비 = 직전 7일 ${rangeText(...wk.a)} vs 그 전 7일 ${rangeText(...wk.b)}` }); })(),
       el('span', { text: `갱신 ${D.meta.generated_at.replace('T', ' ').slice(0, 16)} KST` }));
+    // AI 요약: GitHub Actions가 숫자 검증을 통과한 경우에만 data.json에 넣음 → 없으면 박스 숨김
+    const S = D.summary;
+    if (S && S.lines && S.lines.length) {
+      $('#ai').replaceChildren(
+        el('div', { class: 'head' }, el('span', { class: 'tag', text: 'AI 요약' }),
+          `직전 7일 ${S.period_a} vs 그 전 7일 ${S.period_b}`,
+          el('span', { class: 'src', text: `· ${S.model.replace(/^.*\//, '')} 작성 · 숫자 자동 검증 통과` })),
+        el('ol', {}, ...S.lines.map(t => el('li', { text: t }))));
+      $('#ai').hidden = false;
+    }
     renderKpis(D);
     $('#app').replaceChildren(el('div', { class: 'viewbar', id: 'viewbar' }), el('div', { id: 'body' }));
     renderViewbar(D);
