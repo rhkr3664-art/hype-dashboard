@@ -1,10 +1,12 @@
-# 필요할 때만 mart를 다시 만들고 docs/data.json을 갱신해 커밋한다 (GitHub Pages가 docs 폴더를 공개).
+# 매일 mart를 다시 만들고 docs/data.json을 갱신해 커밋한다 (GitHub Pages가 docs 폴더를 공개).
 # BigQuery 접속은 키 파일 없이 Workload Identity로 한다 (Secret 불필요).
 # 처음 한 번 프로젝트 소유자가 bigquery/setup_github_access.sh 를 Cloud Shell에서 실행해야 한다.
 name: update-dashboard-data
 
 
 on:
+  schedule:
+    - cron: '0 0 * * *'   # 매일 09:00 KST
   workflow_dispatch:       # Actions 탭에서 수동 실행
 
 
