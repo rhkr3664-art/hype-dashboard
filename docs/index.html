@@ -73,10 +73,20 @@ body {
 .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .meta span { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.88); border-radius: 999px; padding: 2px 10px; font-size: 12.5px; }
 
-.tabs { display: flex; gap: 4px; margin-top: 20px; background: rgba(255,255,255,0.10); border-radius: 12px; padding: 4px; width: fit-content; max-width: 100%; overflow-x: auto; }
-.tabs button { border: 0; background: transparent; color: rgba(255,255,255,0.80); font: inherit; font-size: 14px; padding: 6px 14px; border-radius: 9px; cursor: pointer; white-space: nowrap; }
-.tabs button[aria-selected="true"] { background: #fff; color: #1b1650; font-weight: 700; }
-.tabs button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+/* 기간 비교: 왼쪽 지표 목록 + 오른쪽 차트 */
+.cmpgrid { display: grid; grid-template-columns: 300px 1fr; gap: 16px; align-items: start; }
+.cmpgrid > .card { position: sticky; top: 16px; }
+@media (max-width: 860px) { .cmpgrid { grid-template-columns: 1fr; } .cmpgrid > .card { position: static; } }
+.mlist { display: grid; gap: 6px; }
+.mlist button { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; text-align: left; font: inherit; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 9px 12px; cursor: pointer; }
+.mlist button:hover { border-color: var(--axis); }
+.mlist button[aria-selected="true"] { border-color: var(--cur); box-shadow: inset 3px 0 0 var(--cur); }
+.mlist .ml { grid-column: 1 / -1; font-size: 12.5px; color: var(--ink-2); }
+.mlist .mv { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.mlist .mv b { font-size: 18px; font-weight: 700; }
+.mlist .mb { grid-column: 1 / -1; font-size: 12px; color: var(--muted); }
+.mnote { font-size: 12px; color: var(--muted); margin: 8px 2px 0; }
 
 .kpis { display: grid; grid-template-columns: 1.3fr repeat(3, 1fr); gap: 14px; margin-top: 20px; }
 @media (max-width: 860px) { .kpis { grid-template-columns: 1fr 1fr; } .kpis .hero { grid-column: 1 / -1; } }
@@ -222,13 +232,11 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
   <div class="wrap">
     <div class="brand"><div class="logo" aria-hidden="true">?</div><h1>익명 투표 앱 서비스 현황</h1></div>
     <div class="meta" id="meta"></div>
-    <div class="tabs" role="tablist" aria-label="보기 선택" id="tabs"></div>
     <div class="kpis" id="kpis"></div>
   </div>
 </div>
 <div class="wrap">
   <div id="app"><p style="margin-top:24px;color:var(--ink-2)">데이터를 불러오는 중…</p></div>
-  <div id="compare" hidden></div>
   <footer>
     데이터: BigQuery <code>mart</code> → <code>data.json</code> (GitHub Actions 매일 갱신, 노트북 결과와 23개 항목 일치 검증 후 반영).
     비율은 날짜별 분자·분모 합으로 계산 (일별 비율의 단순 평균 아님).
@@ -496,11 +504,10 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
     const word = info.cls === 'up' ? '크게 오름' : info.cls === 'down' ? '크게 내림' : '기준 안 변화';
     return el('span', { class: 'delta ' + info.cls, title: word, 'aria-label': `${info.text}, ${word}` }, arrow, ' ', info.text);
   }
-  // 전주: 월~일 고정. 오늘이 목요일이면 이번 주 월~목 vs 전주 월~목
-  function weekToDate(today) {
-    const dow = (toD(today).getUTCDay() + 6) % 7; // 월=0
-    const mon = addDays(today, -dow);
-    return { a: [mon, today], b: [addDays(mon, -7), addDays(today, -7)] };
+  // 전주 대비: 최신 데이터일까지 직전 7일 vs 그 전 7일 (매일 하루씩 밀림)
+  //   예) 오늘 11/17 → 최신 데이터일 11/16 → 11/10~11/16 vs 11/3~11/9
+  function weekToDate(last) {
+    return { a: [addDays(last, -6), last], b: [addDays(last, -13), addDays(last, -7)] };
   }
   const ruleLine = () => el('div', { class: 'rule' },
     el('span', {}, '증감 표시 기준:'),
@@ -512,58 +519,45 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
   // 비교 화면 (전주 · 전일 · 기간 설정 공통)
   // =====================================================================
   let cmpMetric = 'l2c';
-  function renderCompare(host, A, B, labels, extraTop) {
+  const swatch = c => { const i = el('i'); i.style.background = c; return i; };
+  // 차트가 주인공: 왼쪽 지표 목록(증감 포함)에서 고르면 오른쪽 차트가 그 지표로 바뀜
+  function renderCompare(host, A, B, labels) {
     host.replaceChildren();
-    if (extraTop) host.append(extraTop);
-    host.append(el('div', { class: 'period' },
-      el('div', { class: 'p' }, (() => { const i = el('i'); i.style.background = 'var(--cur)'; return i; })(), el('b', { text: labels[0] + ' ' }), rangeText(A[0], A[1])),
-      el('span', { class: 'vs', text: 'vs' }),
-      el('div', { class: 'p' }, (() => { const i = el('i'); i.style.background = 'var(--base)'; return i; })(), el('b', { text: labels[1] + ' ' }), rangeText(B[0], B[1]))),
-      ruleLine());
-
-    const cards = el('div', { class: 'ccards' });
-    METRICS.forEach(m => {
-      const a = agg(m, A[0], A[1]), b = agg(m, B[0], B[1]);
-      const na = !a ? (m.note || '이 기간에 데이터 없음') : !b ? '비교 기간 데이터 없음' : null;
-      cards.append(el('div', { class: 'ccard' },
-        el('div', { class: 'label', text: m.label }),
-        el('div', { class: 'row' }, el('span', { class: 'a', text: a ? m.fmt(a.v) : '–' }), chip(a && b ? deltaInfo(m, a.v, b.v) : null, '')),
-        el('div', { class: 'b', text: `${labels[1]} ${b ? m.fmt(b.v) : '–'}` }),
-        na ? el('div', { class: 'na-note', text: '※ ' + na }) : null));
-    });
-    cards.append(el('div', { class: 'ccard' },
-      el('div', { class: 'label', text: '첫 7일 2회 완료 도달률 (아하모먼트)' }),
-      el('div', { class: 'row' }, el('span', { class: 'a', text: '–' })),
-      el('div', { class: 'na-note', text: '※ 가입일 코호트(7/18~7/27 가입자) 지표라 날짜 기간 비교 대상 아님. 전체 현황 탭 참고' })));
-    host.append(el('section', { style: 'margin-top:16px' }, cards));
-
-    // 날짜별 나란히 비교
-    const lenA = inRange(A[0], A[1]).length, lenB = inRange(B[0], B[1]).length, n = Math.max(lenA, lenB);
     const datesA = [], datesB = [];
+    const n = Math.max(toD(A[1]) - toD(A[0]), toD(B[1]) - toD(B[0])) / 864e5 + 1;
     for (let i = 0; i < n; i++) { datesA.push(addDays(A[0], i)); datesB.push(addDays(B[0], i)); }
-    const chartHost = el('div', { class: 'chart' });
-    const tblHost = el('div');
-    const sel = el('select', { class: 'metric', 'aria-label': '비교할 지표' }, METRICS.map(m => {
-      const o = el('option', { value: m.key, text: m.label }); if (m.key === cmpMetric) o.selected = true; return o;
-    }));
+    const chartHost = el('div', { class: 'chart' }), tblHost = el('div'), title = el('h3');
+    const list = el('div', { class: 'mlist', role: 'listbox', 'aria-label': '비교할 지표' });
     const legend = el('div', { class: 'legend' },
-      el('span', {}, (() => { const i = el('i'); i.style.background = 'var(--cur)'; return i; })(), labels[0]),
-      el('span', {}, (() => { const i = el('i'); i.style.background = 'var(--base)'; return i; })(), labels[1]));
-    const drawPairs = () => {
-      const m = METRICS.find(x => x.key === sel.value); cmpMetric = m.key;
+      el('span', {}, swatch('var(--cur)'), `${labels[0]} ${rangeText(A[0], A[1])}`),
+      el('span', {}, swatch('var(--base)'), `${labels[1]} ${rangeText(B[0], B[1])}`));
+    const draw = () => {
+      const m = METRICS.find(x => x.key === cmpMetric);
+      title.textContent = m.label;
+      list.querySelectorAll('button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.k === m.key)));
       const pairs = datesA.map((da, i) => {
-        const db = datesB[i];
-        const ra = da <= A[1] ? BYDATE[da] : null, rb = db <= B[1] ? BYDATE[db] : null;
-        return { da: da <= A[1] ? da : null, db: db <= B[1] ? db : null, a: ra ? m.day(ra) : null, b: rb ? m.day(rb) : null };
+        const db = datesB[i], okA = da <= A[1], okB = db <= B[1];
+        const ra = okA ? BYDATE[da] : null, rb = okB ? BYDATE[db] : null;
+        return { da: okA ? da : null, db: okB ? db : null, a: ra ? m.day(ra) : null, b: rb ? m.day(rb) : null };
       });
       pairChart(chartHost, pairs, m);
       tblHost.replaceChildren(tableView([labels[0], '값', labels[1], '값', '변화'],
         pairs.map(p => [p.da ? mdw(p.da) : '–', p.a == null ? '–' : m.fmt(p.a), p.db ? mdw(p.db) : '–', p.b == null ? '–' : m.fmt(p.b), deltaText(m, p.a, p.b)])));
     };
-    sel.addEventListener('change', drawPairs);
-    host.append(el('section', {}, el('div', { class: 'card c-cur' },
-      cardHead('', '', '날짜별 나란히 비교', '같은 순서의 날끼리 비교 (이번 기간 1일째 ↔ 비교 기간 1일째)'), sel, legend, chartHost, tblHost)));
-    drawPairs();
+    METRICS.forEach(m => {
+      const a = agg(m, A[0], A[1]), b = agg(m, B[0], B[1]);
+      const btn = el('button', { type: 'button', role: 'option', 'data-k': m.key },
+        el('span', { class: 'ml', text: m.label }),
+        el('span', { class: 'mv' }, el('b', { text: a ? m.fmt(a.v) : '–' }), chip(a && b ? deltaInfo(m, a.v, b.v) : null, a ? '비교값 없음' : (m.note || '데이터 없음'))),
+        el('span', { class: 'mb', text: `${labels[1]} ${b ? m.fmt(b.v) : '–'}` }));
+      btn.addEventListener('click', () => { cmpMetric = m.key; draw(); });
+      list.append(btn);
+    });
+    host.append(el('div', { class: 'cmpgrid' },
+      el('div', {}, list, el('p', { class: 'mnote', text: '아하모먼트는 가입일 코호트 지표라 기간 비교에서 제외' })),
+      el('div', { class: 'card c-cur' }, title, legend, chartHost, tblHost)),
+      ruleLine());
+    draw();
   }
 
   function renderCustom(host) {
@@ -577,7 +571,7 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
       el('label', { text: '시작' }), mkInput(st[key][0], v => { st[key][0] = v; go(); }),
       el('label', { text: ' 끝', style: 'margin-left:8px' }), mkInput(st[key][1], v => { st[key][1] = v; go(); }));
     const top = el('div', {}, el('div', { class: 'ranges' }, fs('보고 싶은 기간', 'a', 'var(--cur)'), fs('비교 기간', 'b', 'var(--base)')), warn,
-      el('div', { class: 'rule', text: `선택 가능: ${mdw(FIRST)} ~ ${mdw(LAST)} · 퍼널·D1 지표는 7/25부터, 7일 재완료는 8/3까지` }));
+      el('div', { class: 'rule', style: 'margin-bottom:12px', text: `선택 가능: ${mdw(FIRST)} ~ ${mdw(LAST)} · 퍼널·D1 지표는 7/25부터, 7일 재완료는 8/3까지` }));
     function go() {
       const bad = [st.a, st.b].some(([x, y]) => !x || !y || x > y);
       warn.textContent = bad ? '시작일이 끝일보다 늦거나 비어 있어요.' : '';
@@ -607,6 +601,28 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
       b.addEventListener('click', () => { seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); funnel(c2, D.funnel[k]); });
       seg.append(b);
     });
+    // ===== 기간 비교 (본문 맨 위) =====
+    const cmpBody = el('div');
+    const cmpTabs = el('div', { class: 'seg', role: 'tablist', 'aria-label': '비교 방식' });
+    const wk = weekToDate(LAST);
+    const MODES = {
+      wow: ['전주 대비', () => renderCompare(cmpBody, wk.a, wk.b, ['직전 7일', '그 전 7일'])],
+      dod: ['전일 대비', () => renderCompare(cmpBody, [LAST, LAST], [addDays(LAST, -1), addDays(LAST, -1)], ['최신일', '전일'])],
+      custom: ['기간 설정', () => renderCustom(cmpBody)],
+    };
+    Object.entries(MODES).forEach(([k, [label, fn]], i) => {
+      const b = el('button', { type: 'button', role: 'tab', 'aria-pressed': String(i === 0), 'aria-selected': String(i === 0), text: label });
+      b.addEventListener('click', () => {
+        cmpTabs.querySelectorAll('button').forEach(x => { const on = x === b; x.setAttribute('aria-pressed', String(on)); x.setAttribute('aria-selected', String(on)); });
+        fn();
+      });
+      cmpTabs.append(b);
+    });
+    app.append(el('section', {}, secHead('t-chip', '비교', '기간별로 비교하기'),
+      cond(['전주 대비', `직전 7일 ${rangeText(...wk.a)} vs 그 전 7일 ${rangeText(...wk.b)}`], ['전일 대비', `${mdw(LAST)} vs ${mdw(addDays(LAST, -1))}`], ['기준일', `최신 데이터일 ${mdw(LAST)}`]),
+      cmpTabs, cmpBody));
+    MODES.wow[1]();
+
     app.append(el('section', {}, secHead('t-blue', '참여', '방문이 투표로 이어지는가'),
       cond(['단위', '사용자×날짜'], ['조건', '같은 날 앱 실행 이후의 시작·반응·완료만'], ['기간', '7/25~8/10']),
       el('div', { class: 'grid2' },
@@ -715,45 +731,16 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
       kpi(K.launch_to_start, '가장 큰 병목', 'l2s'), kpi(K.open_start_10m, 'BEST 1', 'o10'), kpi(K.aha_rate, '아하 · BEST 3', null));
   }
 
-  // =====================================================================
-  // 탭
-  // =====================================================================
-  const TABS = [['main', '전체 현황'], ['wow', '전주 대비'], ['dod', '전일 대비'], ['custom', '기간 설정']];
-  function showTab(id) {
-    if (!TABS.some(t => t[0] === id)) id = 'main';
-    $('#tabs').querySelectorAll('button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.id === id)));
-    const main = id === 'main';
-    $('#kpis').hidden = !main; $('#app').hidden = !main; $('#compare').hidden = main;
-    const host = $('#compare');
-    if (id === 'wow') {
-      const wk = weekToDate(LAST);
-      renderCompare(host, wk.a, wk.b, ['이번 주', '전주'],
-        el('div', { class: 'rule', style: 'margin-top:24px', text: `주 = 월~일 고정. 최신 데이터일(${mdw(LAST)}) 기준으로 이번 주 월요일부터와 전주 같은 요일까지를 비교` }));
-    } else if (id === 'dod') {
-      renderCompare(host, [LAST, LAST], [addDays(LAST, -1), addDays(LAST, -1)], ['최신일', '전일']);
-    } else if (id === 'custom') {
-      renderCustom(host);
-    }
-    if (location.hash.slice(1) !== id) history.replaceState(null, '', '#' + id);
-  }
-
   function render(D) {
     DAILY = D.daily; DAILY.forEach(r => { BYDATE[r.date] = r; });
     FIRST = DAILY[0].date; LAST = DAILY[DAILY.length - 1].date;
     $('#meta').append(
       el('span', { text: `KPI 기간 ${md(D.meta.kpi_period[0])}~${md(D.meta.kpi_period[1])} · A/B 테스트 전 기준값` }),
       el('span', { text: `최신 데이터일 ${mdw(LAST)}` }),
-      (() => { const wk = weekToDate(LAST); return el('span', { text: `전주 대비 = ${rangeText(...wk.a)} vs ${rangeText(...wk.b)}` }); })(),
+      (() => { const wk = weekToDate(LAST); return el('span', { text: `KPI 전주 대비 = 직전 7일 ${rangeText(...wk.a)} vs 그 전 7일 ${rangeText(...wk.b)}` }); })(),
       el('span', { text: `갱신 ${D.meta.generated_at.replace('T', ' ').slice(0, 16)} KST` }));
-    TABS.forEach(([id, label]) => {
-      const b = el('button', { type: 'button', role: 'tab', 'data-id': id, text: label });
-      b.addEventListener('click', () => showTab(id));
-      $('#tabs').append(b);
-    });
     renderKpis(D);
     renderMain(D);
-    showTab(location.hash.slice(1) || 'main');
-    window.addEventListener('hashchange', () => showTab(location.hash.slice(1)));
   }
 
   fetch('data.json', { cache: 'no-store' })
