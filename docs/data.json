@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "익명 투표 앱 서비스 현황 대시보드",
-    "generated_at": "2026-11-16T17:34:23+09:00",
+    "generated_at": "2026-11-17T09:39:15+09:00",
     "source": "BigQuery swift-implement-513705-i7.mart",
     "kpi_period": [
       "2023-07-25",
