@@ -145,7 +145,9 @@ section { margin-top: 40px; }
 .headline span { font-size: 11.5px; color: var(--muted); }
 .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
 .num { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 6px; font-size: 12px; font-weight: 700; color: #fff; margin-right: 6px; vertical-align: 1px; }
-.n-blue { background: var(--blue); } .n-orange { background: var(--orange); } .n-aqua { background: var(--aqua); }
+.n-blue { background: var(--blue); } .n-orange { background: var(--orange); } .n-aqua { background: var(--aqua); } .n-gray { background: var(--ink-2); }
+.c-gray { --accent: var(--ink-2); }
+.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
 
 /* charts */
 .chart { position: relative; width: 100%; }
@@ -277,7 +279,7 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
   const wd = iso => WD[toD(iso).getUTCDay()];
   const mdw = iso => `${md(iso)}(${wd(iso)})`;
   const rangeText = (a, b) => a === b ? mdw(a) : `${mdw(a)}~${mdw(b)}`;
-  const COLOR = { blue: ['var(--blue)', 'var(--blue-wash)'], orange: ['var(--orange)', 'var(--orange-wash)'], aqua: ['var(--aqua)', 'var(--aqua-wash)'] };
+  const COLOR = { blue: ['var(--blue)', 'var(--blue-wash)'], orange: ['var(--orange)', 'var(--orange-wash)'], aqua: ['var(--aqua)', 'var(--aqua-wash)'], gray: ['var(--ink-2)', 'rgba(128,128,128,0.10)'] };
 
   // ---------- tooltip ----------
   const tip = $('#tip');
@@ -475,10 +477,15 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
     { key: 'd1', label: '다음 날 재방문율 (D1)', kind: 'rate', num: 'd1_return', den: 'd1_base', note: '다음 날 기록이 있어야 집계' },
     { key: 'vdau', label: '방문 DAU (일평균)', kind: 'avg', field: 'visit_dau' },
     { key: 'cdau', label: '완료 DAU (일평균)', kind: 'avg', field: 'complete_dau' },
+    // 가드레일
+    { key: 'gshare', label: '받은 투표 공유 이용률', kind: 'rate', num: 'n_open_share_days', den: 'n_open_days' },
+    // 신고·차단은 아주 드물어서(하루 몇 건) %p 대신 상대 변화 ±50%를 색 기준으로 씀
+    { key: 'grpt', label: '질문 신고 사용자 비율', kind: 'rate', num: 'n_report_days', den: 'n_active_days', digits: 3, relRule: 50 },
+    { key: 'gblk', label: '차단 사용자 비율', kind: 'rate', num: 'n_block_days', den: 'n_active_days', digits: 3, relRule: 50 },
   ];
   METRICS.forEach(m => {
-    m.fmt = m.kind === 'rate' ? v => pct(v) : v => nf.format(Math.round(v)) + '명';
-    m.axis = m.kind === 'rate' ? v => Math.round(v * 100) + '%' : v => v >= 1000 ? Math.round(v / 100) / 10 + 'K' : String(Math.round(v));
+    m.fmt = m.kind === 'rate' ? v => pct(v, m.digits || 1) : v => nf.format(Math.round(v)) + '명';
+    m.axis = m.kind === 'rate' ? v => (m.digits ? (v * 100).toFixed(m.digits) : Math.round(v * 100)) + '%' : v => v >= 1000 ? Math.round(v / 100) / 10 + 'K' : String(Math.round(v));
     m.day = r => m.kind === 'rate' ? (r[m.den] ? r[m.num] / r[m.den] : null) : r[m.field];
   });
   const inRange = (from, to) => DAILY.filter(r => r.date >= from && r.date <= to);
@@ -493,6 +500,11 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
   }
   function deltaInfo(m, a, b) {
     if (a == null || b == null) return null;
+    if (m.relRule) {
+      if (!b) return { cls: a > 0 ? 'up' : 'flat', text: a > 0 ? '0에서 증가' : '0 → 0', sign: Math.sign(a) };
+      const r = (a - b) / b * 100;
+      return { cls: Math.abs(r) < m.relRule ? 'flat' : r > 0 ? 'up' : 'down', text: `${r > 0 ? '+' : ''}${r.toFixed(0)}%`, sign: Math.sign(r) };
+    }
     if (m.kind === 'rate') {
       const pp = (a - b) * 100;
       return { cls: Math.abs(pp) < RULE.ratePP ? 'flat' : pp > 0 ? 'up' : 'down', text: `${pp > 0 ? '+' : ''}${pp.toFixed(1)}%p`, sign: Math.sign(pp) };
@@ -722,11 +734,33 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
     }
 
     // ===== 가드레일 =====
-    body.append(el('section', {}, secHead('t-chip', '가드레일', '참여의 질'),
-      cond(['상태', '실제 선택 이벤트·세트 ID 없음 → 미계산']),
-      el('div', { class: 'guard' },
-        el('div', { class: 'card' }, el('h3', { text: '⑥ 세트 완료 1건당 실제 투표 수' }), el('div', { class: 'state', text: '⏸ 데이터 수집 필요: 친구 선택 이벤트 + 세트 ID' })),
-        el('div', { class: 'card' }, el('h3', { text: '⑦ 0표 완료 비율 (전부 건너뛰고 완료)' }), el('div', { class: 'state', text: '⏸ 데이터 수집 필요: 세트별 실제 선택 수' })))));
+    const GUARDS = [
+      ['gshare', '6', '받은 투표 공유 이용률', '받은 투표 확인한 사용자×날짜 중 같은 날 공유 기록 있음', '새 참여 버튼이 기존 공유를 가리는지 · BEST 1', D.guardrail.open_share],
+      ['grpt', '7', '질문 신고 사용자 비율', '활동 사용자×날짜 중 질문 신고 1회 이상', '참여 유도 후 불편한 질문 경험이 느는지', D.guardrail.report_users],
+      ['gblk', '8', '차단 사용자 비율', '활동 사용자×날짜 중 차단 1회 이상', '참여 증가와 함께 관계 불편이 느는지', D.guardrail.block_users],
+    ];
+    const gHosts = [];
+    body.append(el('section', {}, secHead('t-chip', '가드레일', '참여가 늘 때 나빠지면 안 되는 것'),
+      cond(['단위', '사용자×날짜'], ['기간', cmp ? `${rangeText(...v.A)} vs ${rangeText(...v.B)}` : '7/25~8/10']),
+      el('div', { class: 'grid3' }, GUARDS.map(([key, n, title, def, why, g]) => {
+        const m = M(key), host = el('div', { class: 'chart' });
+        gHosts.push([m, host]);
+        const allVal = g.numerator / g.denominator;
+        return el('div', { class: 'card c-gray' },
+          cmp ? el('div', { class: 'card-head' }, el('h3', {}, el('span', { class: 'num n-gray', text: n }), title), cmpHeadline(m, v))
+              : el('div', { class: 'card-head' }, el('h3', {}, el('span', { class: 'num n-gray', text: n }), title),
+                  el('div', { class: 'headline' }, el('b', { text: m.fmt(allVal) }), el('span', { text: `${nf.format(g.numerator)} / ${nf.format(g.denominator)}` }))),
+          el('div', { class: 'sub', text: def }),
+          el('div', { class: 'sub', style: 'margin-top:-6px', text: '확인: ' + why }),
+          cmp ? pairBlock(m, v) : host);
+      }))));
+    if (!cmp) gHosts.forEach(([m, host]) => {
+      const rows = daily.filter(r => r[m.den]);
+      lineChart(host, rows.map(r => ({ x: r.date, y: m.day(r), r })), {
+        color: 'gray', fmt: (x, axis) => axis ? m.axis(x) : m.fmt(x), tipLabel: m.label,
+        extra: p => [[`${nf.format(p.r[m.num])} / ${nf.format(p.r[m.den])}`, '해당 / 전체']],
+      });
+    });
   }
 
   function funnel(host, steps) {
@@ -776,6 +810,10 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
     bar.replaceChildren(tabs, extra);
     const h = location.hash.slice(1); if (MODES.some(m => m[0] === h)) VIEW = h;
     sync();
+    window.addEventListener('hashchange', () => {
+      const id = location.hash.slice(1) || 'all';
+      if (id !== VIEW && MODES.some(m => m[0] === id)) { VIEW = id; sync(); renderBody(D); }
+    });
   }
 
   function renderKpis(D) {
@@ -798,9 +836,8 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
         el('div', { class: 'label', text: '핵심 · ' + K.launch_to_complete.label }),
         el('div', { class: 'value', text: K.launch_to_complete.value.toFixed(1) + '%' }), bar(K.launch_to_complete.value),
         el('div', { class: 'frac', text: frac(K.launch_to_complete) + ' 사용자×날짜' }),
-        wow('l2c'),
-        el('div', { class: 'why', text: `앱을 켠 날의 ${(100 - K.launch_to_start.value).toFixed(1)}%는 투표를 시작하지 않음 → 가장 큰 이탈 구간` })),
-      kpi(K.launch_to_start, '가장 큰 병목', 'l2s'), kpi(K.open_start_10m, 'BEST 1', 'o10'), kpi(K.aha_rate, '아하 · BEST 3', null));
+        wow('l2c')),
+      kpi(K.launch_to_start, null, 'l2s'), kpi(K.open_start_10m, null, 'o10'), kpi(K.aha_rate, null, null));
   }
 
   function render(D) {

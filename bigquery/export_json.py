@@ -33,7 +33,9 @@ def rate(num, den, label, unit='%'):
 f = one(f"""SELECT SUM(n_launch) launch, SUM(n_start) start, SUM(n_reaction) reaction, SUM(n_complete) complete,
   SUM(x_open) x_open, SUM(x_tab) x_tab, SUM(x_start) x_start, SUM(x_reaction) x_reaction, SUM(x_complete) x_complete,
   SUM(d1_base) d1_base, SUM(d1_return) d1_return FROM mart.funnel_daily""")
-k = one(f"""SELECT SUM(visit_dau) visit, SUM(complete_dau) complete, COUNT(*) days FROM mart.kpi_daily
+k = one(f"""SELECT SUM(visit_dau) visit, SUM(complete_dau) complete, COUNT(*) days,
+  SUM(n_active_days) act, SUM(n_open_days) od, SUM(n_open_share_days) osd, SUM(n_report_days) rpt, SUM(n_block_days) blk
+  FROM mart.kpi_daily
   WHERE event_date BETWEEN '{KPI_START}' AND '{KPI_END}'""")
 o = one("SELECT COUNTIF(in_main_analysis) n, SUM(IF(in_main_analysis, started_10m, 0)) s FROM mart.open_start_10m_user")
 r = one(f"SELECT SUM(n_complete_users) n, SUM(n_recomplete_7d) s FROM mart.repeat_7d_daily WHERE event_date >= '{KPI_START}'")
@@ -60,6 +62,11 @@ data = {
         'd1_return': rate(f['d1_return'], f['d1_base'], '앱 실행일 기준 D1 재방문율'),
         'next_week_return': rate(w[0]['n_next_week_active'], w[0]['n_active'], '다음 주 재방문율 (7/18주 → 7/25주)'),
     },
+    'guardrail': {
+        'open_share': rate(k['osd'], k['od'], '받은 투표 공유 이용률'),
+        'report_users': rate(k['rpt'], k['act'], '질문 신고 사용자 비율'),
+        'block_users': rate(k['blk'], k['act'], '차단 사용자 비율'),
+    },
     'funnel': {
         'basic': [{'step': s, 'n': n} for s, n in [('앱 실행', f['launch']), ('투표 시작', f['start']),
                                                   ('첫 관측 반응', f['reaction']), ('세트 완료', f['complete'])]],
@@ -69,6 +76,7 @@ data = {
     },
     'daily': rows("""
         SELECT k.event_date AS date, k.visit_dau, k.complete_dau, k.complete_user_rate,
+          k.n_active_days, k.n_open_days, k.n_open_share_days, k.n_report_days, k.n_block_days,
           f.n_launch, f.n_start, f.n_reaction, f.n_complete,
           f.x_open, f.x_tab, f.x_start, f.x_reaction, f.x_complete,
           SAFE_DIVIDE(f.n_start, f.n_launch) AS launch_to_start, SAFE_DIVIDE(f.n_complete, f.n_launch) AS launch_to_complete,
