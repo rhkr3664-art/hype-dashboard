@@ -69,7 +69,8 @@ data = {
     },
     'daily': rows("""
         SELECT k.event_date AS date, k.visit_dau, k.complete_dau, k.complete_user_rate,
-          f.n_launch, f.n_start, f.n_complete,
+          f.n_launch, f.n_start, f.n_reaction, f.n_complete,
+          f.x_open, f.x_tab, f.x_start, f.x_reaction, f.x_complete,
           SAFE_DIVIDE(f.n_start, f.n_launch) AS launch_to_start, SAFE_DIVIDE(f.n_complete, f.n_launch) AS launch_to_complete,
           f.d1_base, f.d1_return, SAFE_DIVIDE(f.d1_return, f.d1_base) AS d1_return_rate,
           o.n_open_users, o.n_start_10m, o.start_10m_rate,
