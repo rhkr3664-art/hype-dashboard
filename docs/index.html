@@ -420,7 +420,7 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
     const draw = () => {
       host.replaceChildren();
       if (host.clientWidth === 0) return;
-      const W = Math.max(280, host.clientWidth), H = 250, m = { l: 44, r: 8, t: 32, b: 42 };  // 위 여백: 값 두 줄 자리
+      const W = Math.max(280, host.clientWidth), H = 230, m = { l: 44, r: 8, t: 12, b: 42 };
       const iw = W - m.l - m.r, ih = H - m.t - m.b;
       const vals = pairs.flatMap(p => [p.a, p.b]).filter(v => v != null);
       if (!vals.length) { host.append(el('p', { class: 'sub', text: '선택한 기간에 이 지표 데이터가 없습니다.' })); return; }
@@ -456,11 +456,10 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
         svg.append(...g, hitR);
         if (i % labelEvery === 0) {
           // 날짜가 적힌 묶음에만 막대 위 값 표시 (이번 기간 · 비교 기간)
-          // 두 값을 묶음 가운데 위에 위아래로 쌓아서 겹치지 않게 (위 = 이번 기간, 아래 = 비교 기간)
-          const short = v => metric.kind === 'rate' ? metric.fmt(v) : nf.format(Math.round(v));
-          const topY = Y(Math.max(p.a ?? 0, p.b ?? 0)) - 5;
-          if (p.b != null) { const vb = s('text', { x: cx, y: topY, 'text-anchor': 'middle', class: 'vlabel vlabel-b' }); vb.textContent = short(p.b); svg.append(vb); }
-          if (p.a != null) { const va = s('text', { x: cx, y: p.b != null ? topY - 15 : topY, 'text-anchor': 'middle', class: 'vlabel' }); va.textContent = short(p.a); svg.append(va); }
+          // DAU처럼 인원 지표는 막대 위 값을 '3.6천명'으로 짧게 (겹침 방지)
+          const short = v => metric.kind === 'rate' ? metric.fmt(v) : `${(v / 1000).toFixed(1)}천명`;
+          if (p.a != null) { const va = s('text', { x: cx - bw / 2 - 1, y: Y(p.a) - 5, 'text-anchor': 'middle', class: 'vlabel' }); va.textContent = short(p.a); svg.append(va); }
+          if (p.b != null) { const vb = s('text', { x: cx + bw / 2 + 1, y: Y(p.b) - 5, 'text-anchor': 'middle', class: 'vlabel vlabel-b' }); vb.textContent = short(p.b); svg.append(vb); }
           const t1 = s('text', { x: cx, y: H - 24, 'text-anchor': 'middle' }); t1.textContent = p.da ? mdw(p.da) : `${i + 1}일째`; svg.append(t1);
           if (p.db) { const t2 = s('text', { x: cx, y: H - 8, 'text-anchor': 'middle', class: 'xb' }); t2.textContent = 'vs ' + md(p.db); svg.append(t2); }
         }
