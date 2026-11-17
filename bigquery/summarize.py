@@ -101,11 +101,11 @@ PROMPT = """너는 익명 투표 앱 서비스 현황 대시보드의 요약을 
 """
 
 
-def _call(method, url, key, payload=None):
+def _call(method, url, key, payload=None, timeout=240):
     req = urllib.request.Request(url, method=method, headers={'x-goog-api-key': key, 'Content-Type': 'application/json'},
                                  data=json.dumps(payload).encode() if payload is not None else None)
     try:
-        with urllib.request.urlopen(req, timeout=90) as r:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
             return json.loads(r.read())
     except urllib.error.HTTPError as e:
         raise RuntimeError(f'HTTP {e.code}: {e.read().decode(errors="replace")[:300]}') from None
@@ -128,18 +128,32 @@ def ask_llm(F):
     key = os.environ.get('GEMINI_API_KEY')
     if not key:
         raise RuntimeError('GEMINI_API_KEY 없음 (GitHub Secret 등록 필요)')
-    payload = {'contents': [{'role': 'user', 'parts': [{'text': PROMPT + json.dumps(F, ensure_ascii=False, indent=1)}]}],
-               'generationConfig': {'temperature': 0.2}}
-    model = MODEL
+    # 생각(thinking) 단계를 낮게 해서 응답을 빠르게 (지원 안 하는 모델이면 빼고 다시 요청)
+    cfg = {'temperature': 0.2, 'thinkingConfig': {'thinkingLevel': 'low'}}
+    payload = lambda: {'contents': [{'role': 'user', 'parts': [{'text': PROMPT + json.dumps(F, ensure_ascii=False, indent=1)}]}],
+                       'generationConfig': cfg}
+    model, last = MODEL, None
+    for attempt in range(4):
+        t0 = dt.datetime.now()
+        try:
+            res = _call('POST', f'{API}/models/{model}:generateContent', key, payload())
+            print(f'Gemini 응답: {model}, {(dt.datetime.now() - t0).seconds}초')
+            break
+        except Exception as e:
+            last, msg = e, str(e)
+            print(f'시도 {attempt + 1} 실패 ({model}, {(dt.datetime.now() - t0).seconds}초): {msg[:200]}')
+            if 'API_KEY' in msg:
+                raise
+            if 'thinking' in msg.lower() and 'thinkingConfig' in cfg:
+                cfg.pop('thinkingConfig')
+            elif 'HTTP 404' in msg or ('HTTP 400' in msg and model == MODEL):
+                model = pick_model(key); print(f'→ {model} 모델로 다시 시도')
+            elif 'timed out' not in msg and 'HTTP 5' not in msg and 'HTTP 429' not in msg:
+                raise
+    else:
+        raise RuntimeError(f'4번 시도 모두 실패: {last}')
     try:
-        res = _call('POST', f'{API}/models/{model}:generateContent', key, payload)
-    except RuntimeError as e:
-        if 'HTTP 404' not in str(e) and 'HTTP 400' not in str(e) or 'API_KEY' in str(e):
-            raise
-        model = pick_model(key); print(f'{MODEL} 없음 → {model} 사용')
-        res = _call('POST', f'{API}/models/{model}:generateContent', key, payload)
-    try:
-        return ''.join(p.get('text', '') for p in res['candidates'][0]['content']['parts']), model
+        return ''.join(p.get('text', '') for p in res['candidates'][0]['content']['parts'] if not p.get('thought')), model
     except (KeyError, IndexError):
         raise RuntimeError(f'응답에 요약이 없음: {json.dumps(res, ensure_ascii=False)[:300]}')
 
