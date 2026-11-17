@@ -60,7 +60,7 @@ def facts(D):
         elif kind == 'rel':
             fa, fb = f'{a * 100:.{dg}f}%', f'{b * 100:.{dg}f}%'
             r = (a - b) / b * 100 if b else 0
-            ch, big = f'{r:+.0f}% (상대 변화)', abs(r) >= REL_PCT
+            ch, big = f'{r:+.0f}%', abs(r) >= REL_PCT   # 아주 드문 지표라 %p 대신 상대 변화
         else:
             fa, fb = f'{a * 100:.{dg}f}%', f'{b * 100:.{dg}f}%'
             pp = (a - b) * 100
