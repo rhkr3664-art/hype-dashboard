@@ -24,7 +24,7 @@
   --aqua: #1baf7a;   --aqua-wash: rgba(27,175,122,0.10);   --aqua-soft: #e3f6ee;
   /* 테마 = 발표 PPT 초록. 비교 기간 막대: 이번 기간 = 진한 초록, 비교 기간 = 회색 */
   --cur: #0b7556; --base: #c3c2b7; --prev: #9a9993; /* 이전(비교) 기간 글자: 중간 회색 */
-  /* 증감 표시: 좋아짐 = 초록, 나빠짐 = 빨강, 기준 안 = 회색 (항상 ▲▼ 기호와 함께) */
+  /* 증감 표시: 좋아짐 = 초록, 나빠짐 = 빨강, 변화 없음 = 회색 (항상 ▲▼ 기호와 함께) */
   --good: #1a7f47; --good-soft: #e1f3e8; --bad: #c93636; --bad-soft: #fbe9e9; --flat: #6b6a66; --flat-soft: #f0efec;
   --hero-from: #08523e; --hero-mid: #0e7f60; --hero-to: #14a27b;
 }
@@ -117,7 +117,7 @@ body {
 .kpi .wow { margin-top: 10px; font-size: 12px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .kpi .wow .when { color: var(--muted); }
 
-/* delta chip: 좋아짐 = 초록 / 나빠짐 = 빨강 / 기준 안 = 회색 (항상 ▲▼ 기호와 함께) */
+/* delta chip: 좋아짐 = 초록 / 나빠짐 = 빨강 / 변화 없음 = 회색 (항상 ▲▼ 기호와 함께) */
 .delta { display: inline-flex; align-items: center; gap: 3px; font-weight: 700; font-size: 12.5px; border-radius: 6px; padding: 1px 7px; font-variant-numeric: tabular-nums; }
 .delta.good { color: var(--good); background: var(--good-soft); }
 .delta.bad { color: var(--bad); background: var(--bad-soft); }
@@ -133,10 +133,11 @@ body {
 .lvrow.hi .row-h b { color: var(--orange); }
 .lvrow .b { display: grid; grid-template-columns: 44px 1fr auto; gap: 8px; align-items: center; }
 .lvrow .k { font-size: 12px; color: var(--ink-2); }
-.lvrow .track { position: relative; height: 10px; background: var(--grid); border-radius: 999px; }
-.lvrow .track i { display: block; height: 100%; border-radius: 999px; }
-.lvrow .track .mk { position: absolute; top: -3px; width: 2px; height: 16px; background: var(--ink); border-radius: 1px; }
-.lvrow .v { font-size: 12.5px; font-weight: 650; text-align: right; min-width: 48px; font-variant-numeric: tabular-nums; display: flex; gap: 6px; align-items: center; justify-content: flex-end; }
+.lvrow .track { position: relative; display: flex; align-items: center; gap: 6px; height: 16px; }
+.lvrow .track i { display: block; height: 10px; border-radius: 999px; min-width: 2px; }
+.lvrow .track .pv { font-size: 12.5px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.lvrow .track .mk { position: absolute; top: 0; width: 2px; height: 16px; background: var(--ink); border-radius: 1px; }
+.lvrow .v { font-size: 12px; color: var(--ink-2); text-align: right; min-width: 64px; font-variant-numeric: tabular-nums; display: flex; gap: 6px; align-items: center; justify-content: flex-end; }
 
 /* ---------- sections ---------- */
 section { margin-top: 40px; }
@@ -263,11 +264,10 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
 <script>
 (() => {
   // =====================================================================
-  // 증감 색 기준 (팀 합의로 바꿀 수 있음)
-  //   비율 지표: 비교 기간 대비 ±1.0%p 이상 → 오름 빨강 / 내림 파랑, 그 안쪽은 회색
-  //   인원 지표(DAU): 비교 기간 대비 ±5% 이상 → 같은 색 규칙
+  // 증감 색: 기준 없이 오르면 초록 / 내리면 빨강 (표시 자릿수로 0이면 회색)
+  //   신고·차단처럼 줄어야 좋은 지표(lowerBetter)는 반대: 오르면 빨강 / 내리면 초록
   // =====================================================================
-  const RULE = { ratePP: 1.0, countPct: 5 };
+  const dir = x => x > 0 ? 'up' : x < 0 ? 'down' : 'flat';
 
   const $ = (s, el = document) => el.querySelector(s);
   const el = (tag, attrs = {}, ...kids) => {
@@ -538,9 +538,9 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
     { key: 'cdau', label: '완료 DAU (일평균)', kind: 'avg', field: 'complete_dau' },
     // 가드레일
     { key: 'gshare', label: '받은 투표 공유 이용률', kind: 'rate', num: 'n_open_share_days', den: 'n_open_days' },
-    // 신고·차단은 아주 드물어서(하루 몇 건) %p 대신 상대 변화 ±50%를 색 기준으로 씀. 줄어야 좋은 지표(lowerBetter)
-    { key: 'grpt', label: '질문 신고 사용자 비율', kind: 'rate', num: 'n_report_days', den: 'n_active_days', digits: 3, relRule: 50, lowerBetter: true },
-    { key: 'gblk', label: '차단 사용자 비율', kind: 'rate', num: 'n_block_days', den: 'n_active_days', digits: 3, relRule: 50, lowerBetter: true },
+    // 신고·차단은 아주 드물어서(하루 몇 건) %p 대신 상대 변화(%)로 표시. 줄어야 좋은 지표(lowerBetter)
+    { key: 'grpt', label: '질문 신고 사용자 비율', kind: 'rate', num: 'n_report_days', den: 'n_active_days', digits: 3, relRule: true, lowerBetter: true },
+    { key: 'gblk', label: '차단 사용자 비율', kind: 'rate', num: 'n_block_days', den: 'n_active_days', digits: 3, relRule: true, lowerBetter: true },
   ];
   METRICS.forEach(m => {
     m.fmt = m.kind === 'rate' ? v => pct(v, m.digits || 1) : v => nf.format(Math.round(v)) + '명';
@@ -568,21 +568,21 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
     if (m.relRule) {
       if (!b) return { cls: a > 0 ? 'up' : 'flat', text: a > 0 ? '0에서 증가' : '0 → 0', sign: Math.sign(a) };
       const r = (a - b) / b * 100;
-      return { cls: Math.abs(r) < m.relRule ? 'flat' : r > 0 ? 'up' : 'down', text: `${r > 0 ? '+' : ''}${r.toFixed(0)}%`, sign: Math.sign(r) };
+      return { cls: dir(+r.toFixed(0)), text: `${r > 0 ? '+' : ''}${r.toFixed(0)}%`, sign: Math.sign(r) };
     }
     if (m.kind === 'rate') {
       const pp = (a - b) * 100;
-      return { cls: Math.abs(pp) < RULE.ratePP ? 'flat' : pp > 0 ? 'up' : 'down', text: `${pp > 0 ? '+' : ''}${pp.toFixed(1)}%p`, sign: Math.sign(pp) };
+      return { cls: dir(+pp.toFixed(1)), text: `${pp > 0 ? '+' : ''}${pp.toFixed(1)}%p`, sign: Math.sign(pp) };
     }
     const r = b ? (a - b) / b * 100 : 0;
-    return { cls: Math.abs(r) < RULE.countPct ? 'flat' : r > 0 ? 'up' : 'down', text: `${r > 0 ? '+' : ''}${r.toFixed(1)}%`, sign: Math.sign(r) };
+    return { cls: dir(+r.toFixed(1)), text: `${r > 0 ? '+' : ''}${r.toFixed(1)}%`, sign: Math.sign(r) };
   }
   const deltaText = (m, a, b) => { const d = deltaInfo(m, a, b); return d ? d.text : '–'; };
   function chip(info, naText = '비교 불가') {
     if (!info) return el('span', { class: 'delta na', text: naText });
     const arrow = info.cls === 'up' ? '▲' : info.cls === 'down' ? '▼' : info.sign > 0 ? '△' : info.sign < 0 ? '▽' : '–';
     const tone = info.tone || 'flat';
-    const word = tone === 'good' ? '좋아짐' : tone === 'bad' ? '나빠짐' : '기준 안 변화';
+    const word = tone === 'good' ? '좋아짐' : tone === 'bad' ? '나빠짐' : '변화 없음';
     return el('span', { class: 'delta ' + tone, title: word, 'aria-label': `${info.text}, ${word}` }, arrow, ' ', info.text);
   }
   // 7일 지표는 8/3까지라 '전주 대비'·'전일 대비'를 그 날짜 기준으로 당겨서 비교 (기간 설정은 고른 그대로)
@@ -711,24 +711,6 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
     const pctFmt = (x, axis) => axis ? Math.round(x * 100) + '%' : pct(x);
     const headAll = (val, label) => [val, label];
 
-    // ===== 규모 (맨 앞: 얼마나 오는지 먼저 보고 뒤의 비율을 읽음) =====
-    const c6 = el('div', { class: 'chart' }), c7 = el('div', { class: 'chart' });
-    const kfmt = (x, axis) => axis ? (x >= 1000 ? (x / 1000) + 'K' : String(x)) : nf.format(x);
-    const dauCard = (key, title, avgVal, host) => el('div', { class: 'card c-aqua' },
-      cmp ? el('div', { class: 'card-head' }, el('h3', { text: title + ' (일평균)' }), cmpHeadline(M(key), v))
-          : cardHead('', 'aqua', title, '', nf.format(Math.round(avgVal)) + '명', '7/25~ 일평균'),
-      cmp ? pairBlock(M(key), v) : host);
-    body.append(el('section', {}, secHead('t-aqua', '규모', '얼마나 오는가'),
-      cond(['방문 DAU', '그날 활동한 고유 사용자'], ['완료 DAU', '그날 세트를 1번 이상 완료한 고유 사용자']),
-      el('div', { class: 'grid2' }, dauCard('vdau', '방문 DAU', K.visit_dau_avg.value, c6), dauCard('cdau', '완료 DAU', K.complete_dau_avg.value, c7)),
-      cmp ? null : tableView(['날짜', '방문 DAU', '완료 DAU', '방문 대비 완료'], daily.map(r => [mdw(r.date), nf.format(r.visit_dau), nf.format(r.complete_dau), pct(r.complete_user_rate)]))));
-    if (!cmp) {
-      lineChart(c6, daily.map(r => ({ x: r.date, y: r.visit_dau, r })), { color: 'aqua', fmt: kfmt, tipLabel: '방문 DAU', yMax: 40000 });
-      lineChart(c7, daily.map(r => ({ x: r.date, y: r.complete_dau, r })), {
-        color: 'aqua', fmt: kfmt, tipLabel: '완료 DAU', yMax: 8000, extra: p => [[pct(p.r.complete_user_rate), '방문 대비 완료']],
-      });
-    }
-
     // ===== 참여 =====
     const fd = daily.filter(r => r.launch_to_complete != null);
     const od = daily.filter(r => r.start_10m_rate != null);
@@ -774,23 +756,26 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
     const lvAgg = ([from, to]) => LV.map((_, lv) => {
       const rs = (D.levels || []).filter(x => x.level === lv && x.date >= from && x.date <= to);
       const n = rs.reduce((t, x) => t + x.n_user_days, 0);
-      return n ? { n, ret: rs.reduce((t, x) => t + x.n_return_7d, 0) / n, rec: rs.reduce((t, x) => t + x.n_recomplete_7d, 0) / n } : null;
+      const retN = rs.reduce((t, x) => t + x.n_return_7d, 0), recN = rs.reduce((t, x) => t + x.n_recomplete_7d, 0);
+      return n ? { n, retN, recN, ret: retN / n, rec: recN / n } : null;
     });
     const lvA = lvAgg(cmp ? v7.A : [KPI0, LAST7]), lvB = cmp ? lvAgg(v7.B) : null;
     const legend7 = () => el('div', { class: 'legend' },
       el('span', {}, swatch('var(--cur)'), '재방문 = 다음 7일 안 앱 활동'), el('span', {}, swatch('var(--orange)'), '재투표 = 다음 7일 안 세트 완료'));
+    // 막대 끝에 비율, 오른쪽에 다시 온 사용자·일 수 (비교 보기면 증감 배지도)
     const lvLine = (label, a, b, key, color, mkey) => {
-      const va = a ? a[key] : null, vb = b ? b[key] : null;
-      const f = el('i'); f.style.cssText = `width:${(va || 0) * 100}%;background:${color}`;
-      const tr = el('div', { class: 'track' }, f);
-      if (vb != null) { const mk = el('b', { class: 'mk', title: `비교 기간 ${pct(vb)}` }); mk.style.left = `calc(${vb * 100}% - 1px)`; tr.append(mk); }
+      const va = a ? a[key] : null, vb = b ? b[key] : null, cnt = a ? a[key + 'N'] : null;
+      const f = el('i'); f.style.cssText = `width:calc((100% - 52px) * ${va || 0});background:${color}`;
+      const tr = el('div', { class: 'track' }, f, el('span', { class: 'pv', text: va == null ? '–' : pct(va) }));
+      if (vb != null) { const mk = el('b', { class: 'mk', title: `비교 기간 ${pct(vb)}` }); mk.style.left = `calc((100% - 52px) * ${vb} - 1px)`; tr.append(mk); }
       return el('div', { class: 'b' }, el('span', { class: 'k', text: label }), tr,
-        el('span', { class: 'v' }, va == null ? '–' : pct(va), cmp ? chip(va != null && vb != null ? deltaInfo(M(mkey), va, vb) : null, '–') : null));
+        el('span', { class: 'v' }, cnt == null ? '–' : nf.format(cnt), cmp ? chip(va != null && vb != null ? deltaInfo(M(mkey), va, vb) : null, '–') : null));
     };
     const card4 = el('div', { class: 'card c-orange' },
       cardHead('4', 'orange', '누가 다시 오나: 그날 한 행동별',
         cmp ? `${v7.labels[0]} ${rangeText(...v7.A)} · 막대 속 세로선 = ${v7.labels[1]} ${rangeText(...v7.B)}` : `${md(KPI0)}~${md(LAST7)} · 사용자×날짜 기준`),
       legend7(),
+      el('div', { class: 'sub', style: 'margin:-2px 0 8px', text: '막대 끝 = 비율 · 오른쪽 숫자 = 7일 안에 다시 온(또는 다시 투표한) 사용자·일 수' }),
       el('div', { class: 'lv' }, LV.map(([name, desc], i) => el('div', { class: 'lvrow' + (i === 3 ? ' hi' : '') },
         el('div', { class: 'row-h' }, el('span', {}, el('b', { text: name }), el('span', { class: 'd', text: ' · ' + desc })),
           el('span', { class: 'n', text: lvA[i] ? nf.format(lvA[i].n) + ' 사용자·일' : '–' })),
@@ -816,6 +801,24 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
       { label: '재방문율', color: 'var(--cur)', get: r => r.return_7d_rate, extra: r => `${nf.format(r.n_return_7d_c)} / ${nf.format(r.n_complete_users)}` },
       { label: '재투표율', color: 'var(--orange)', get: r => r.recomplete_7d_rate, extra: r => `${nf.format(r.n_recomplete_7d)} / ${nf.format(r.n_complete_users)}` },
     ]);
+
+    // ===== 규모 (가드레일 바로 위) =====
+    const c6 = el('div', { class: 'chart' }), c7 = el('div', { class: 'chart' });
+    const kfmt = (x, axis) => axis ? (x >= 1000 ? (x / 1000) + 'K' : String(x)) : nf.format(x);
+    const dauCard = (key, title, avgVal, host) => el('div', { class: 'card c-aqua' },
+      cmp ? el('div', { class: 'card-head' }, el('h3', { text: title + ' (일평균)' }), cmpHeadline(M(key), v))
+          : cardHead('', 'aqua', title, '', nf.format(Math.round(avgVal)) + '명', '7/25~ 일평균'),
+      cmp ? pairBlock(M(key), v) : host);
+    body.append(el('section', {}, secHead('t-aqua', '규모', '얼마나 오는가'),
+      cond(['방문 DAU', '그날 활동한 고유 사용자'], ['완료 DAU', '그날 세트를 1번 이상 완료한 고유 사용자']),
+      el('div', { class: 'grid2' }, dauCard('vdau', '방문 DAU', K.visit_dau_avg.value, c6), dauCard('cdau', '완료 DAU', K.complete_dau_avg.value, c7)),
+      cmp ? null : tableView(['날짜', '방문 DAU', '완료 DAU', '방문 대비 완료'], daily.map(r => [mdw(r.date), nf.format(r.visit_dau), nf.format(r.complete_dau), pct(r.complete_user_rate)]))));
+    if (!cmp) {
+      lineChart(c6, daily.map(r => ({ x: r.date, y: r.visit_dau, r })), { color: 'aqua', fmt: kfmt, tipLabel: '방문 DAU', yMax: 40000 });
+      lineChart(c7, daily.map(r => ({ x: r.date, y: r.complete_dau, r })), {
+        color: 'aqua', fmt: kfmt, tipLabel: '완료 DAU', yMax: 8000, extra: p => [[pct(p.r.complete_user_rate), '방문 대비 완료']],
+      });
+    }
 
     // ===== 가드레일 =====
     const GUARDS = [
