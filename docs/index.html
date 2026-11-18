@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>익명 투표 앱 서비스 현황</title>
-<meta name="description" content="익명 투표 앱의 참여 병목과 아하모먼트 지표 대시보드 (BigQuery mart → data.json)">
+<meta name="description" content="익명 투표 앱의 참여 병목과 완료 후 재방문 지표 대시보드 (BigQuery mart → data.json)">
 <style>
 :root {
   color-scheme: light;
@@ -24,8 +24,8 @@
   --aqua: #1baf7a;   --aqua-wash: rgba(27,175,122,0.10);   --aqua-soft: #e3f6ee;
   /* 비교 기간 막대: 이번 기간 = 진한 남보라, 비교 기간 = 회색 */
   --cur: #3a2d9c; --base: #c3c2b7; --prev: #9a9993; /* 이전(비교) 기간 글자: 중간 회색 */
-  /* 증감 표시: 오름 = 빨강, 내림 = 파랑, 기준 안 = 회색 (항상 ▲▼ 기호와 함께) */
-  --up: #d03b3b; --up-soft: #fbe9e9; --down: #1c5cab; --down-soft: #e3edfb; --flat: #6b6a66; --flat-soft: #f0efec;
+  /* 증감 표시: 좋아짐 = 초록, 나빠짐 = 빨강, 기준 안 = 회색 (항상 ▲▼ 기호와 함께) */
+  --good: #1a7f47; --good-soft: #e1f3e8; --bad: #c93636; --bad-soft: #fbe9e9; --flat: #6b6a66; --flat-soft: #f0efec;
   --hero-from: #1b1650; --hero-mid: #3a2d9c; --hero-to: #7a3fb8;
 }
 @media (prefers-color-scheme: dark) {
@@ -37,7 +37,7 @@
     --orange: #d95926; --orange-wash: rgba(217,89,38,0.16); --orange-soft: rgba(217,89,38,0.18);
     --aqua: #199e70; --aqua-wash: rgba(25,158,112,0.16); --aqua-soft: rgba(25,158,112,0.18);
     --cur: #9085e9; --base: #5a5955; --prev: #8f8e88;
-    --up: #ef7676; --up-soft: rgba(208,59,59,0.22); --down: #6da7ec; --down-soft: rgba(57,135,229,0.22); --flat: #b0afa8; --flat-soft: #2c2c2a;
+    --good: #5cc98a; --good-soft: rgba(26,127,71,0.24); --bad: #ef7676; --bad-soft: rgba(208,59,59,0.22); --flat: #b0afa8; --flat-soft: #2c2c2a;
     --hero-from: #120f38; --hero-mid: #2a2075; --hero-to: #55308a;
   }
 }
@@ -49,7 +49,7 @@
   --orange: #d95926; --orange-wash: rgba(217,89,38,0.16); --orange-soft: rgba(217,89,38,0.18);
   --aqua: #199e70; --aqua-wash: rgba(25,158,112,0.16); --aqua-soft: rgba(25,158,112,0.18);
   --cur: #9085e9; --base: #5a5955; --prev: #8f8e88;
-  --up: #ef7676; --up-soft: rgba(208,59,59,0.22); --down: #6da7ec; --down-soft: rgba(57,135,229,0.22); --flat: #b0afa8; --flat-soft: #2c2c2a;
+  --good: #5cc98a; --good-soft: rgba(26,127,71,0.24); --bad: #ef7676; --bad-soft: rgba(208,59,59,0.22); --flat: #b0afa8; --flat-soft: #2c2c2a;
   --hero-from: #120f38; --hero-mid: #2a2075; --hero-to: #55308a;
 }
 * { box-sizing: border-box; }
@@ -91,42 +91,51 @@ body {
 .fcmp .nums span { display: block; color: var(--muted); }
 .fcmp .conv { grid-column: 2 / 4; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 0 0 4px; }
 
-/* AI 요약 박스 (meta 칩과 KPI 사이) */
-.ai { margin-top: 16px; background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.16); border-radius: 16px; padding: 14px 18px; }
+/* ---------- 상단: 헤더 밴드 아래에 AI 요약 카드 → 핵심 지표 카드 (흰 카드로 구분) ---------- */
+.top { margin-top: 20px; }
+.ai { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--hero-to); border-radius: 14px; padding: 14px 18px 14px 16px; box-shadow: var(--shadow); }
 .ai .head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; font-weight: 650; }
-.ai .tag { font-size: 11px; font-weight: 700; border-radius: 999px; padding: 1px 8px; background: linear-gradient(135deg, #ff8ac2, #ffb36b); color: #1b1650; }
-.ai .src { font-size: 12px; font-weight: 400; color: rgba(255,255,255,0.62); }
-.ai ol { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 3px; font-size: 14px; line-height: 1.5; color: rgba(255,255,255,0.95); }
-.kpis { display: grid; grid-template-columns: 1.3fr repeat(3, 1fr); gap: 14px; margin-top: 20px; }
-@media (max-width: 860px) { .kpis { grid-template-columns: 1fr 1fr; } .kpis .hero { grid-column: 1 / -1; } }
-.kpi { background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.16); border-radius: 16px; padding: 16px 18px; }
-.kpi .label { font-size: 13px; color: rgba(255,255,255,0.80); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.kpi .value { font-size: 32px; font-weight: 700; margin-top: 6px; line-height: 1.1; letter-spacing: -0.01em; }
-.kpi .frac { font-size: 12px; color: rgba(255,255,255,0.62); margin-top: 2px; }
-.kpi .pill { font-size: 11px; font-weight: 600; border-radius: 999px; padding: 0 8px; background: rgba(255,255,255,0.18); color: #fff; }
-.kpi.hero { background: #fff; color: #0b0b0b; border: 0; }
-.kpi.hero .label { color: #52514e; }
-.kpi.hero .value { font-size: 56px; color: #1b1650; }
-.kpi.hero .frac { color: #898781; }
-.kpi.hero .why { font-size: 13px; color: #52514e; margin-top: 10px; }
-.kpi .bar { height: 6px; border-radius: 999px; background: rgba(255,255,255,0.18); margin-top: 10px; overflow: hidden; }
-.kpi .bar i { display: block; height: 100%; border-radius: 999px; background: #fff; }
-.kpi.hero .bar { background: #ece9f8; }
-.kpi.hero .bar i { background: #3a2d9c; }
-.kpi .wow { margin-top: 8px; font-size: 12px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.kpi .wow .when { color: rgba(255,255,255,0.62); }
-.kpi.hero .wow .when { color: #898781; }
+.ai .tag { font-size: 11.5px; font-weight: 700; border-radius: 999px; padding: 1px 9px; background: linear-gradient(135deg, #ff8ac2, #ffb36b); color: #1b1650; }
+.ai .src { font-size: 12px; font-weight: 400; color: var(--muted); }
+.ai .per { font-size: 12px; color: var(--ink-2); margin-top: 4px; }
+.ai ol { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 3px; font-size: 14px; line-height: 1.55; color: var(--ink); }
+.kpi-title { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin: 26px 0 10px; }
+.kpi-title h2 { font-size: 17px; margin: 0; font-weight: 700; }
+.kpi-title span { font-size: 12.5px; color: var(--muted); }
+.kpis { display: grid; grid-template-columns: 1.25fr 1fr 1fr; gap: 14px; }
+@media (max-width: 860px) { .kpis { grid-template-columns: 1fr; } }
+.kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px 18px; box-shadow: var(--shadow); }
+.kpi .label { font-size: 13px; color: var(--ink-2); }
+.kpi .value { font-size: 34px; font-weight: 700; margin-top: 6px; line-height: 1.1; letter-spacing: -0.01em; }
+.kpi .frac { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.kpi .bar { height: 6px; border-radius: 999px; background: var(--grid); margin-top: 10px; overflow: hidden; }
+.kpi .bar i { display: block; height: 100%; border-radius: 999px; background: var(--cur); }
+.kpi.hero { border: 2px solid var(--cur); }
+.kpi.hero .label { color: var(--cur); font-weight: 650; }
+.kpi.hero .value { font-size: 44px; color: var(--cur); }
+.kpi .wow { margin-top: 10px; font-size: 12px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.kpi .wow .when { color: var(--muted); }
 
-/* delta chip */
+/* delta chip: 좋아짐 = 초록 / 나빠짐 = 빨강 / 기준 안 = 회색 (항상 ▲▼ 기호와 함께) */
 .delta { display: inline-flex; align-items: center; gap: 3px; font-weight: 700; font-size: 12.5px; border-radius: 6px; padding: 1px 7px; font-variant-numeric: tabular-nums; }
-.delta.up { color: var(--up); background: var(--up-soft); }
-.delta.down { color: var(--down); background: var(--down-soft); }
+.delta.good { color: var(--good); background: var(--good-soft); }
+.delta.bad { color: var(--bad); background: var(--bad-soft); }
 .delta.flat { color: var(--flat); background: var(--flat-soft); }
 .delta.na { color: var(--muted); background: transparent; font-weight: 500; padding: 0; }
-.kpi:not(.hero) .delta.up { color: #fff; background: rgba(239,118,118,0.55); }
-.kpi:not(.hero) .delta.down { color: #fff; background: rgba(109,167,236,0.50); }
-.kpi:not(.hero) .delta.flat { color: #fff; background: rgba(255,255,255,0.18); }
-.kpi:not(.hero) .delta.na { color: rgba(255,255,255,0.62); }
+
+/* 반복: 그날 한 행동별 7일 재방문·재투표 */
+.lv { display: grid; gap: 14px; margin-top: 4px; }
+.lvrow { display: grid; gap: 5px; }
+.lvrow .row-h { display: flex; justify-content: space-between; gap: 8px; font-size: 13.5px; }
+.lvrow .row-h .d { color: var(--muted); font-size: 12px; }
+.lvrow .row-h .n { color: var(--muted); font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.lvrow.hi .row-h b { color: var(--orange); }
+.lvrow .b { display: grid; grid-template-columns: 44px 1fr auto; gap: 8px; align-items: center; }
+.lvrow .k { font-size: 12px; color: var(--ink-2); }
+.lvrow .track { position: relative; height: 10px; background: var(--grid); border-radius: 999px; }
+.lvrow .track i { display: block; height: 100%; border-radius: 999px; }
+.lvrow .track .mk { position: absolute; top: -3px; width: 2px; height: 16px; background: var(--ink); border-radius: 1px; }
+.lvrow .v { font-size: 12.5px; font-weight: 650; text-align: right; min-width: 48px; font-variant-numeric: tabular-nums; display: flex; gap: 6px; align-items: center; justify-content: flex-end; }
 
 /* ---------- sections ---------- */
 section { margin-top: 40px; }
@@ -192,17 +201,6 @@ section { margin-top: 40px; }
 .seg button { border: 0; background: transparent; color: var(--ink-2); padding: 4px 12px; font: inherit; font-size: 13px; cursor: pointer; border-radius: 8px; }
 .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); font-weight: 650; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
 
-/* compare bars (aha) */
-.cmp { display: grid; gap: 8px; margin-top: 4px; }
-.cmp .row { display: grid; grid-template-columns: 56px 1fr 52px; gap: 10px; align-items: center; font-size: 13px; }
-.cmp .track { height: 12px; }
-.cmp .fill { height: 100%; background: var(--orange); border-radius: 0 4px 4px 0; }
-.cmp .row.dim .fill { background: var(--axis); }
-.cmp .v { text-align: right; font-weight: 650; font-variant-numeric: tabular-nums; }
-.mini { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
-.mini > div { background: var(--aqua-soft); border-radius: 12px; padding: 12px 14px; }
-.mini b { display: block; font-size: 22px; font-weight: 700; }
-.mini span { font-size: 12.5px; color: var(--ink-2); }
 
 /* ---------- compare view ---------- */
 .period { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 28px; }
@@ -247,14 +245,17 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
   <div class="wrap">
     <div class="brand"><div class="logo" aria-hidden="true">?</div><h1>익명 투표 앱 서비스 현황</h1></div>
     <div class="meta" id="meta"></div>
-    <div class="ai" id="ai" hidden></div>
-    <div class="kpis" id="kpis"></div>
   </div>
 </div>
 <div class="wrap">
+  <div class="top">
+    <div class="ai" id="ai" hidden></div>
+    <div class="kpi-title"><h2>핵심 지표</h2><span id="kpi-sub"></span></div>
+    <div class="kpis" id="kpis"></div>
+  </div>
   <div id="app"><p style="margin-top:24px;color:var(--ink-2)">데이터를 불러오는 중…</p></div>
   <footer>
-    데이터: BigQuery <code>mart</code> → <code>data.json</code> (GitHub Actions 매일 갱신, 노트북 결과와 23개 항목 일치 검증 후 반영).
+    데이터: BigQuery <code>mart</code> → <code>data.json</code> (GitHub Actions 수동 실행 시 갱신, 노트북 결과와 맞춘 검증 항목을 모두 통과해야 반영).
     비율은 날짜별 분자·분모 합으로 계산 (일별 비율의 단순 평균 아님).
   </footer>
 </div>
@@ -385,38 +386,64 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
     return `M${x},${base}V${y + rad}Q${x},${y} ${x + rad},${y}H${x + w - rad}Q${x + w},${y} ${x + w},${y + rad}V${base}Z`;
   };
 
-  // ---------- column chart (aha by signup day) ----------
-  function columnChart(host, rows, avg) {
+  // ---------- line chart (여러 선, 같은 날짜 축: 7일 재방문·재투표) ----------
+  function lineChart2(host, rows, series, { yMax = 1 } = {}) {
     const draw = () => {
       host.replaceChildren();
-      if (host.clientWidth === 0) return;
-      const W = Math.max(280, host.clientWidth), H = 220, m = { l: 40, r: 8, t: 12, b: 40 };
-      const iw = W - m.l - m.r, ih = H - m.t - m.b;
-      const Y = v => m.t + ih - (v / 0.8) * ih;
-      const band = iw / rows.length, bw = Math.min(24, band * 0.6);
-      const svg = s('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': '가입 날짜별 아하모먼트 도달률' });
+      if (!host.isConnected || host.clientWidth === 0 || !rows.length) return;
+      const W = Math.max(280, host.clientWidth), H = 230, m = { l: 40, r: 56, t: 12, b: 26 };
+      const iw = W - m.l - m.r, ih = H - m.t - m.b, last = rows.length - 1;
+      const X = i => m.l + (last ? (i / last) * iw : iw / 2);
+      const Y = v => m.t + ih - (v / yMax) * ih;
+      const svg = s('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': series.map(x => x.label).join(' · ') + ' 추이' });
       for (let k = 0; k <= 4; k++) {
-        const v = k * 0.2, y = Y(v);
+        const v = (yMax / 4) * k, y = Y(v);
         svg.append(s('line', { x1: m.l, x2: W - m.r, y1: y, y2: y, stroke: k === 0 ? 'var(--axis)' : 'var(--grid)', 'stroke-width': 1 }));
         const t = s('text', { x: m.l - 8, y: y + 4, 'text-anchor': 'end' }); t.textContent = Math.round(v * 100) + '%'; svg.append(t);
       }
+      const step = Math.max(1, Math.ceil(rows.length / Math.max(2, Math.floor(iw / 64))));
+      const labeled = [];
       rows.forEach((r, i) => {
-        const cx = m.l + band * i + band / 2, x = cx - bw / 2;
-        const path = s('path', { class: 'col', fill: 'var(--orange)', tabindex: 0, d: roundTop(x, Y(r.aha_rate), bw, Y(0)) });
-        const rowsTip = () => [[pct(r.aha_rate), '도달률', true], [`${r.n_aha} / ${r.n_new_users}명`, '도달 / 신규 가입'], [mdw(r.signup_day) + ' 가입', '']];
-        const hitR = s('rect', { x: m.l + band * i, y: m.t, width: band, height: ih, fill: 'transparent' });
-        const on = e => { path.classList.add('on'); showTip(e, rowsTip(), 'var(--orange)'); };
-        const off = () => { path.classList.remove('on'); hideTip(); };
-        for (const n of [hitR, path]) { n.addEventListener('pointermove', on); n.addEventListener('pointerleave', off); }
-        path.addEventListener('focus', on); path.addEventListener('blur', off);
-        svg.append(hitR, path);
-        const v = s('text', { x: cx, y: Y(r.aha_rate) - 5, 'text-anchor': 'middle', class: 'vlabel' }); v.textContent = pct(r.aha_rate, 0); svg.append(v);
-        const t = s('text', { x: cx, y: H - 22, 'text-anchor': 'middle' }); t.textContent = md(r.signup_day); svg.append(t);
-        const n = s('text', { x: cx, y: H - 6, 'text-anchor': 'middle' }); n.textContent = `n=${r.n_new_users}`; svg.append(n);
+        if (i % step && i !== last) return;
+        labeled.push(i);
+        const t = s('text', { x: X(i), y: H - 6, 'text-anchor': 'middle' }); t.textContent = md(r.date); svg.append(t);
       });
-      const ya = Y(avg);
-      svg.append(s('line', { x1: m.l, x2: W - m.r, y1: ya, y2: ya, stroke: 'var(--ink-2)', 'stroke-width': 1 }));
-      const at = s('text', { x: W - m.r, y: ya - 6, 'text-anchor': 'end', class: 'endlabel' }); at.textContent = `전체 ${pct(avg)}`; svg.append(at);
+      const dots = [];
+      series.forEach(sr => {
+        const d = rows.map((r, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)},${Y(sr.get(r)).toFixed(1)}`).join('');
+        svg.append(s('path', { d, fill: 'none', stroke: sr.color, 'stroke-width': 2.2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
+        labeled.filter(i => i !== last).forEach(i => {
+          const py = Y(sr.get(rows[i]));
+          svg.append(s('circle', { cx: X(i), cy: py, r: 3, fill: sr.color, stroke: 'var(--surface)', 'stroke-width': 1.5 }));
+          const t = s('text', { x: i === 0 ? X(i) + 4 : X(i), y: py - 8, 'text-anchor': i === 0 ? 'start' : 'middle', class: 'vlabel' });
+          t.textContent = pct(sr.get(rows[i])); svg.append(t);
+        });
+        svg.append(s('circle', { cx: X(last), cy: Y(sr.get(rows[last])), r: 4, fill: sr.color, stroke: 'var(--surface)', 'stroke-width': 2 }));
+        const end = s('text', { x: X(last) + 8, y: Y(sr.get(rows[last])) + 4, class: 'endlabel' }); end.textContent = pct(sr.get(rows[last])); svg.append(end);
+        dots.push(s('circle', { r: 4, fill: sr.color, stroke: 'var(--surface)', 'stroke-width': 2, opacity: 0 }));
+      });
+      const cross = s('line', { y1: m.t, y2: m.t + ih, stroke: 'var(--axis)', 'stroke-width': 1, opacity: 0 });
+      svg.append(cross, ...dots);
+      const hit = s('rect', { x: m.l, y: m.t, width: iw, height: ih, class: 'hit', tabindex: 0 });
+      const at = i => {
+        const r = rows[i];
+        cross.setAttribute('x1', X(i)); cross.setAttribute('x2', X(i)); cross.setAttribute('opacity', 1);
+        series.forEach((sr, k) => { dots[k].setAttribute('cx', X(i)); dots[k].setAttribute('cy', Y(sr.get(r))); dots[k].setAttribute('opacity', 1); });
+        return [...series.map(sr => [pct(sr.get(r)), sr.label + (sr.extra ? ` (${sr.extra(r)})` : ''), sr.color]), [mdw(r.date) + ' 완료', '']];
+      };
+      hit.addEventListener('pointermove', e => {
+        const b = svg.getBoundingClientRect(); const px = (e.clientX - b.left) * (W / b.width);
+        showTip(e, at(Math.max(0, Math.min(last, Math.round(((px - m.l) / iw) * last)))));
+      });
+      let ki = last;
+      hit.addEventListener('focus', e => showTip(e, at(ki)));
+      hit.addEventListener('keydown', e => {
+        if (e.key === 'ArrowRight') ki = Math.min(last, ki + 1); else if (e.key === 'ArrowLeft') ki = Math.max(0, ki - 1); else return;
+        e.preventDefault(); showTip(e, at(ki));
+      });
+      const off = () => { hideTip(); cross.setAttribute('opacity', 0); dots.forEach(d => d.setAttribute('opacity', 0)); };
+      hit.addEventListener('pointerleave', off); hit.addEventListener('blur', off);
+      svg.append(hit);
       host.append(svg);
     };
     draw();
@@ -498,21 +525,23 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
   // =====================================================================
   // 기간 비교 공통
   // =====================================================================
-  let DAILY = [], BYDATE = {}, FIRST = '', LAST = '';
+  let DAILY = [], BYDATE = {}, FIRST = '', LAST = '', LAST7 = '';
   const METRICS = [
     { key: 'l2c', label: '앱 실행 → 세트 완료율', kind: 'rate', num: 'n_complete', den: 'n_launch' },
     { key: 'l2s', label: '앱 실행 → 투표 시작률', kind: 'rate', num: 'n_start', den: 'n_launch' },
     { key: 's2c', label: '투표 시작 → 세트 완료율', kind: 'rate', num: 'n_complete', den: 'n_start' },
     { key: 'o10', label: '받은 투표 확인 → 10분 내 시작률', kind: 'rate', num: 'n_start_10m', den: 'n_open_users', note: '날짜별 그날 첫 확인 기준' },
-    { key: 'rc7', label: '이후 7일 세트 재완료율', kind: 'rate', num: 'n_recomplete_7d', den: 'n_complete_users', note: '완료 후 7일이 지나야 집계' },
+    // 7일 지표 (d7): 완료 후 D+7까지 봐야 해서 최신일보다 7일 앞선 날(8/3)까지만 값이 있음
+    { key: 'rv7', label: '완료 후 7일 내 재방문율', kind: 'rate', num: 'n_return_7d_c', den: 'n_complete_users', d7: true },
+    { key: 'rc7', label: '완료 후 7일 내 재투표율', kind: 'rate', num: 'n_recomplete_7d', den: 'n_complete_users', d7: true },
     { key: 'd1', label: '다음 날 재방문율 (D1)', kind: 'rate', num: 'd1_return', den: 'd1_base', note: '다음 날 기록이 있어야 집계' },
     { key: 'vdau', label: '방문 DAU (일평균)', kind: 'avg', field: 'visit_dau' },
     { key: 'cdau', label: '완료 DAU (일평균)', kind: 'avg', field: 'complete_dau' },
     // 가드레일
     { key: 'gshare', label: '받은 투표 공유 이용률', kind: 'rate', num: 'n_open_share_days', den: 'n_open_days' },
-    // 신고·차단은 아주 드물어서(하루 몇 건) %p 대신 상대 변화 ±50%를 색 기준으로 씀
-    { key: 'grpt', label: '질문 신고 사용자 비율', kind: 'rate', num: 'n_report_days', den: 'n_active_days', digits: 3, relRule: 50 },
-    { key: 'gblk', label: '차단 사용자 비율', kind: 'rate', num: 'n_block_days', den: 'n_active_days', digits: 3, relRule: 50 },
+    // 신고·차단은 아주 드물어서(하루 몇 건) %p 대신 상대 변화 ±50%를 색 기준으로 씀. 줄어야 좋은 지표(lowerBetter)
+    { key: 'grpt', label: '질문 신고 사용자 비율', kind: 'rate', num: 'n_report_days', den: 'n_active_days', digits: 3, relRule: 50, lowerBetter: true },
+    { key: 'gblk', label: '차단 사용자 비율', kind: 'rate', num: 'n_block_days', den: 'n_active_days', digits: 3, relRule: 50, lowerBetter: true },
   ];
   METRICS.forEach(m => {
     m.fmt = m.kind === 'rate' ? v => pct(v, m.digits || 1) : v => nf.format(Math.round(v)) + '명';
@@ -529,7 +558,13 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
     }
     return { v: rows.reduce((t, r) => t + r[m.field], 0) / rows.length, days: rows.length };
   }
+  // 좋아짐(good) / 나빠짐(bad): 오른 게 좋은 지표는 오름 = 좋아짐, 신고·차단처럼 줄어야 좋은 지표는 반대
   function deltaInfo(m, a, b) {
+    const d = deltaRaw(m, a, b);
+    if (d) d.tone = d.cls === 'flat' ? 'flat' : (d.cls === 'up') !== !!m.lowerBetter ? 'good' : 'bad';
+    return d;
+  }
+  function deltaRaw(m, a, b) {
     if (a == null || b == null) return null;
     if (m.relRule) {
       if (!b) return { cls: a > 0 ? 'up' : 'flat', text: a > 0 ? '0에서 증가' : '0 → 0', sign: Math.sign(a) };
@@ -547,19 +582,21 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
   function chip(info, naText = '비교 불가') {
     if (!info) return el('span', { class: 'delta na', text: naText });
     const arrow = info.cls === 'up' ? '▲' : info.cls === 'down' ? '▼' : info.sign > 0 ? '△' : info.sign < 0 ? '▽' : '–';
-    const word = info.cls === 'up' ? '크게 오름' : info.cls === 'down' ? '크게 내림' : '기준 안 변화';
-    return el('span', { class: 'delta ' + info.cls, title: word, 'aria-label': `${info.text}, ${word}` }, arrow, ' ', info.text);
+    const tone = info.tone || 'flat';
+    const word = tone === 'good' ? '좋아짐' : tone === 'bad' ? '나빠짐' : '기준 안 변화';
+    return el('span', { class: 'delta ' + tone, title: word, 'aria-label': `${info.text}, ${word}` }, arrow, ' ', info.text);
+  }
+  // 7일 지표는 8/3까지라 '전주 대비'·'전일 대비'를 그 날짜 기준으로 당겨서 비교 (기간 설정은 고른 그대로)
+  function shift7(v) {
+    if (v.id === 'wow') { const wk = weekToDate(LAST7); return { ...v, A: wk.a, B: wk.b }; }
+    if (v.id === 'dod') return { ...v, A: [LAST7, LAST7], B: [addDays(LAST7, -1), addDays(LAST7, -1)] };
+    return v;
   }
   // 전주 대비: 최신 데이터일까지 직전 7일 vs 그 전 7일 (매일 하루씩 밀림)
   //   예) 오늘 11/17 → 최신 데이터일 11/16 → 11/10~11/16 vs 11/3~11/9
   function weekToDate(last) {
     return { a: [addDays(last, -6), last], b: [addDays(last, -13), addDays(last, -7)] };
   }
-  const ruleLine = () => el('div', { class: 'rule' },
-    el('span', {}, '증감 표시 기준:'),
-    chip({ cls: 'up', text: `비율 +${RULE.ratePP}%p↑ / 인원 +${RULE.countPct}%↑`, sign: 1 }),
-    chip({ cls: 'down', text: `비율 −${RULE.ratePP}%p↓ / 인원 −${RULE.countPct}%↓`, sign: -1 }),
-    chip({ cls: 'flat', text: '그 사이', sign: 0 }));
 
   // =====================================================================
   // 본문: 보기 탭에 따라 전체가 바뀜
@@ -652,7 +689,7 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
     const fs = (title, key, color) => el('fieldset', {}, el('legend', {}, swatch(color), title),
       el('label', { text: '시작' }), mkInput(key, 0), el('label', { text: ' 끝', style: 'margin-left:8px' }), mkInput(key, 1));
     return el('div', {}, el('div', { class: 'ranges', style: 'margin-top:10px' }, fs('보고 싶은 기간', 'a', 'var(--cur)'), fs('비교 기간', 'b', 'var(--base)')), warn,
-      el('div', { class: 'rule', text: `선택 가능: ${mdw(FIRST)} ~ ${mdw(LAST)} · 퍼널·D1은 7/25부터, 7일 재완료는 8/3까지` }));
+      el('div', { class: 'rule', text: `선택 가능: ${mdw(FIRST)} ~ ${mdw(LAST)} · 퍼널은 7/25부터, 7일 재방문·재투표는 8/3까지` }));
   }
 
   let VIEW = 'all';
@@ -674,6 +711,24 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
     const K = D.kpi, daily = D.daily;
     const pctFmt = (x, axis) => axis ? Math.round(x * 100) + '%' : pct(x);
     const headAll = (val, label) => [val, label];
+
+    // ===== 규모 (맨 앞: 얼마나 오는지 먼저 보고 뒤의 비율을 읽음) =====
+    const c6 = el('div', { class: 'chart' }), c7 = el('div', { class: 'chart' });
+    const kfmt = (x, axis) => axis ? (x >= 1000 ? (x / 1000) + 'K' : String(x)) : nf.format(x);
+    const dauCard = (key, title, avgVal, host) => el('div', { class: 'card c-aqua' },
+      cmp ? el('div', { class: 'card-head' }, el('h3', { text: title + ' (일평균)' }), cmpHeadline(M(key), v))
+          : cardHead('', 'aqua', title, '', nf.format(Math.round(avgVal)) + '명', '7/25~ 일평균'),
+      cmp ? pairBlock(M(key), v) : host);
+    body.append(el('section', {}, secHead('t-aqua', '규모', '얼마나 오는가'),
+      cond(['방문 DAU', '그날 활동한 고유 사용자'], ['완료 DAU', '그날 세트를 1번 이상 완료한 고유 사용자']),
+      el('div', { class: 'grid2' }, dauCard('vdau', '방문 DAU', K.visit_dau_avg.value, c6), dauCard('cdau', '완료 DAU', K.complete_dau_avg.value, c7)),
+      cmp ? null : tableView(['날짜', '방문 DAU', '완료 DAU', '방문 대비 완료'], daily.map(r => [mdw(r.date), nf.format(r.visit_dau), nf.format(r.complete_dau), pct(r.complete_user_rate)]))));
+    if (!cmp) {
+      lineChart(c6, daily.map(r => ({ x: r.date, y: r.visit_dau, r })), { color: 'aqua', fmt: kfmt, tipLabel: '방문 DAU', yMax: 40000 });
+      lineChart(c7, daily.map(r => ({ x: r.date, y: r.complete_dau, r })), {
+        color: 'aqua', fmt: kfmt, tipLabel: '완료 DAU', yMax: 8000, extra: p => [[pct(p.r.complete_user_rate), '방문 대비 완료']],
+      });
+    }
 
     // ===== 참여 =====
     const fd = daily.filter(r => r.launch_to_complete != null);
@@ -711,58 +766,57 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
     }
     drawFunnel('basic');
 
-    // ===== 아하 =====
-    const A = D.aha, c4 = el('div', { class: 'chart' }), c5 = el('div', { class: 'chart' });
-    const rd = daily.filter(r => r.recomplete_7d_rate != null);
-    const cmpRow = (label, val, dim) => {
-      const f = el('div', { class: 'fill' }); f.style.width = val + '%';
-      return el('div', { class: 'row' + (dim ? ' dim' : '') }, el('span', { text: label }), el('div', { class: 'track' }, f), el('span', { class: 'v', text: val.toFixed(1) + '%' }));
+    // ===== 반복: 완료하면 다시 오는가 (완료 후 7일 재방문·재투표) =====
+    //   누가 = 그날 한 행동별 비교 (카드 4) / 언제 = 완료한 날짜별 추이 (카드 5). 같은 지표를 사람별·날짜별로 나눠 봄
+    //   7일 지표는 D+7까지 봐야 해서 8/3까지만 있음 → 비교 보기에서는 기간을 8/3 기준으로 당겨서 비교
+    const KPI0 = D.meta.kpi_period[0];
+    const v7 = cmp ? shift7(v) : null;
+    const LV = [['기록 없음', '그날 투표 시작·완료 없음'], ['시작만', '시작했지만 세트 완료 없음'], ['완료 1회', '그날 세트 1번 완료'], ['완료 2회 이상', '그날 세트 2번 이상 완료']];
+    const lvAgg = ([from, to]) => LV.map((_, lv) => {
+      const rs = (D.levels || []).filter(x => x.level === lv && x.date >= from && x.date <= to);
+      const n = rs.reduce((t, x) => t + x.n_user_days, 0);
+      return n ? { n, ret: rs.reduce((t, x) => t + x.n_return_7d, 0) / n, rec: rs.reduce((t, x) => t + x.n_recomplete_7d, 0) / n } : null;
+    });
+    const lvA = lvAgg(cmp ? v7.A : [KPI0, LAST7]), lvB = cmp ? lvAgg(v7.B) : null;
+    const legend7 = () => el('div', { class: 'legend' },
+      el('span', {}, swatch('var(--cur)'), '재방문 = 다음 7일 안 앱 활동'), el('span', {}, swatch('var(--orange)'), '재투표 = 다음 7일 안 세트 완료'));
+    const lvLine = (label, a, b, key, color, mkey) => {
+      const va = a ? a[key] : null, vb = b ? b[key] : null;
+      const f = el('i'); f.style.cssText = `width:${(va || 0) * 100}%;background:${color}`;
+      const tr = el('div', { class: 'track' }, f);
+      if (vb != null) { const mk = el('b', { class: 'mk', title: `비교 기간 ${pct(vb)}` }); mk.style.left = `calc(${vb * 100}% - 1px)`; tr.append(mk); }
+      return el('div', { class: 'b' }, el('span', { class: 'k', text: label }), tr,
+        el('span', { class: 'v' }, va == null ? '–' : pct(va), cmp ? chip(va != null && vb != null ? deltaInfo(M(mkey), va, vb) : null, '–') : null));
     };
     const card4 = el('div', { class: 'card c-orange' },
-      el('div', { class: 'card-head' },
-        el('div', {}, el('h3', {}, el('span', { class: 'num n-orange', text: '4' }), '가입 날짜별 도달률'),
-          el('div', { class: 'sub', text: cmp ? '가입 코호트 지표라 기간 비교 대상 아님 · 전체 값 표시' : '날짜별 인원 적음 (n=30~89)' })),
-        el('div', { class: 'headline' }, el('b', { text: K.aha_rate.value.toFixed(1) + '%' }), el('span', { text: '전체 도달률' }))),
-      c4,
-      el('div', { class: 'sub', style: 'margin-top:12px', text: '가입 후 8~14일 재방문율' }),
-      el('div', { class: 'cmp' }, cmpRow('도달', A.reached_w2_return), cmpRow('미도달', A.not_reached_w2_return, true)),
-      tableView(['가입일', '신규 가입', '도달', '도달률'], A.by_signup_day.map(r => [mdw(r.signup_day), nf.format(r.n_new_users), nf.format(r.n_aha), pct(r.aha_rate)])));
+      cardHead('4', 'orange', '누가 다시 오나: 그날 한 행동별',
+        cmp ? `${v7.labels[0]} ${rangeText(...v7.A)} · 막대 속 세로선 = ${v7.labels[1]} ${rangeText(...v7.B)}` : `${md(KPI0)}~${md(LAST7)} · 사용자×날짜 기준`),
+      legend7(),
+      el('div', { class: 'lv' }, LV.map(([name, desc], i) => el('div', { class: 'lvrow' + (i === 3 ? ' hi' : '') },
+        el('div', { class: 'row-h' }, el('span', {}, el('b', { text: name }), el('span', { class: 'd', text: ' · ' + desc })),
+          el('span', { class: 'n', text: lvA[i] ? nf.format(lvA[i].n) + ' 사용자·일' : '–' })),
+        lvLine('재방문', lvA[i], lvB && lvB[i], 'ret', 'var(--cur)', 'rv7'),
+        lvLine('재투표', lvA[i], lvB && lvB[i], 'rec', 'var(--orange)', 'rc7')))),
+      cmp ? null : tableView(['그날 한 행동', '사용자·일', '7일 재방문', '7일 재투표'], LV.map(([name], i) => [name, lvA[i] ? nf.format(lvA[i].n) : '–', lvA[i] ? pct(lvA[i].ret) : '–', lvA[i] ? pct(lvA[i].rec) : '–'])));
+    const c5 = el('div', { class: 'chart' });
+    const rd = daily.filter(r => r.return_7d_rate != null && r.recomplete_7d_rate != null);
+    const sub7 = (title, key) => el('div', { style: 'margin-top:12px' },
+      el('div', { class: 'card-head' }, el('h3', { style: 'font-size:14px', text: title }), cmpHeadline(M(key), v7)), pairBlock(M(key), v7));
     const card5 = el('div', { class: 'card c-orange' },
-      cmp ? el('div', { class: 'card-head' }, el('div', {}, el('h3', {}, el('span', { class: 'num n-orange', text: '5' }), '이후 7일 세트 재완료율'), el('div', { class: 'sub', text: '완료 후 7일이 지나야 집계 (8/3까지)' })), cmpHeadline(M('rc7'), v))
-          : cardHead('5', 'orange', '이후 7일 세트 재완료율', '조건: 그날 완료 → 다음 7일 안 재완료 · 8/3까지', K.recomplete_7d.value.toFixed(1) + '%', '7/25~8/3 전체'),
-      cmp ? pairBlock(M('rc7'), v) : c5,
-      cmp ? null : tableView(['날짜', '완료 사용자', '7일 내 재완료', '재완료율'], rd.map(r => [mdw(r.date), nf.format(r.n_complete_users), nf.format(r.n_recomplete_7d), pct(r.recomplete_7d_rate)])));
-    body.append(el('section', {}, secHead('t-orange', '아하모먼트', '두 번째 완료까지 가는가'),
-      cond(['아하모먼트', '가입 후 7일 안 세트 2회 이상 완료'], ['대상', `7/18~7/27 신규 가입자 ${nf.format(K.aha_rate.denominator)}명`]),
+      cmp ? cardHead('5', 'orange', '언제: 완료한 날별 추이', '완료 후 7일이 지나야 집계 (8/3까지)')
+          : cardHead('5', 'orange', '언제: 완료한 날별 추이', '그날 세트를 완료한 사용자 → 다음 7일 · 8/3까지 집계',
+              K.return_7d.value.toFixed(1) + '%', `재방문 · 재투표 ${K.recomplete_7d.value.toFixed(1)}%`),
+      cmp ? [sub7('완료 후 7일 내 재방문율', 'rv7'), sub7('완료 후 7일 내 재투표율', 'rc7')] : [legend7(), c5],
+      cmp ? null : tableView(['완료한 날', '완료 사용자', '7일 재방문', '7일 재투표', '재방문율', '재투표율'],
+        rd.map(r => [mdw(r.date), nf.format(r.n_complete_users), nf.format(r.n_return_7d_c), nf.format(r.n_recomplete_7d), pct(r.return_7d_rate), pct(r.recomplete_7d_rate)])));
+    body.append(el('section', {}, secHead('t-orange', '반복', '완료하면 다시 오는가'),
+      cond(['재방문', '그날 다음 7일 안 앱 활동'], ['재투표', '그날 다음 7일 안 세트 완료'],
+        ['기간', cmp ? `${rangeText(...v7.A)} vs ${rangeText(...v7.B)} (7일 관찰이 끝난 날 기준)` : `${md(KPI0)}~${md(LAST7)} (7일 관찰이 끝난 날까지)`]),
       el('div', { class: 'grid2' }, card4, card5)));
-    columnChart(c4, A.by_signup_day, K.aha_rate.value / 100);
-    if (!cmp) lineChart(c5, rd.map(r => ({ x: r.date, y: r.recomplete_7d_rate, r })), {
-      color: 'orange', fmt: pctFmt, tipLabel: '7일 재완료율', yMax: 0.8, extra: p => [[`${nf.format(p.r.n_recomplete_7d)} / ${nf.format(p.r.n_complete_users)}`, '재완료 / 완료']],
-    });
-
-    // ===== 규모·재방문 =====
-    const c6 = el('div', { class: 'chart' }), c7 = el('div', { class: 'chart' });
-    const kfmt = (x, axis) => axis ? (x >= 1000 ? (x / 1000) + 'K' : String(x)) : nf.format(x);
-    const dauCard = (key, title, avgVal, host) => el('div', { class: 'card c-aqua' },
-      cmp ? el('div', { class: 'card-head' }, el('h3', { text: title + ' (일평균)' }), cmpHeadline(M(key), v))
-          : cardHead('', 'aqua', title, '', nf.format(Math.round(avgVal)) + '명', '7/25~ 일평균'),
-      cmp ? pairBlock(M(key), v) : host);
-    const d1 = M('d1'), d1a = cmp ? agg(d1, ...v.A) : null, d1b = cmp ? agg(d1, ...v.B) : null;
-    body.append(el('section', {}, secHead('t-aqua', '규모·재방문', '얼마나 오고, 다시 오는가'),
-      cond(['DAU', '그날 활동한 고유 사용자'], ['완료 DAU', '그날 세트 1번 이상 완료'], ['D1', '앱 실행일 다음 날 활동']),
-      el('div', { class: 'grid2' }, dauCard('vdau', '방문 DAU', K.visit_dau_avg.value, c6), dauCard('cdau', '완료 DAU', K.complete_dau_avg.value, c7)),
-      el('div', { class: 'mini' },
-        cmp ? el('div', {}, el('b', {}, d1a ? pct(d1a.v) : '–', ' ', chip(d1a && d1b ? deltaInfo(d1, d1a.v, d1b.v) : null, d1a ? '' : '다음 날 기록 필요')),
-                el('span', { text: `다음 날 재방문 (D1) · ${v.labels[1]} ${d1b ? pct(d1b.v) : '–'}` }))
-            : el('div', {}, el('b', { text: K.d1_return.value.toFixed(1) + '%' }), el('span', { text: '다음 날 재방문 (D1)' })),
-        el('div', {}, el('b', { text: K.next_week_return.value.toFixed(1) + '%' }), el('span', {}, '다음 주 재방문 (7/18주 → 7/25주)', cmp ? el('span', { class: 'notcmp', text: '고정 주 지표' }) : null))),
-      cmp ? null : tableView(['날짜', '방문 DAU', '완료 DAU', '방문 대비 완료', 'D1 재방문'], daily.map(r => [mdw(r.date), nf.format(r.visit_dau), nf.format(r.complete_dau), pct(r.complete_user_rate), pct(r.d1_return_rate)]))));
-    if (!cmp) {
-      lineChart(c6, daily.map(r => ({ x: r.date, y: r.visit_dau, r })), { color: 'aqua', fmt: kfmt, tipLabel: '방문 DAU', yMax: 40000 });
-      lineChart(c7, daily.map(r => ({ x: r.date, y: r.complete_dau, r })), {
-        color: 'aqua', fmt: kfmt, tipLabel: '완료 DAU', yMax: 8000, extra: p => [[pct(p.r.complete_user_rate), '방문 대비 완료']],
-      });
-    }
+    if (!cmp) lineChart2(c5, rd, [
+      { label: '재방문율', color: 'var(--cur)', get: r => r.return_7d_rate, extra: r => `${nf.format(r.n_return_7d_c)} / ${nf.format(r.n_complete_users)}` },
+      { label: '재투표율', color: 'var(--orange)', get: r => r.recomplete_7d_rate, extra: r => `${nf.format(r.n_recomplete_7d)} / ${nf.format(r.n_complete_users)}` },
+    ]);
 
     // ===== 가드레일 =====
     const GUARDS = [
@@ -847,45 +901,55 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
     });
   }
 
+  // 핵심 지표 3개: 참여 성과(실행→완료) · 참여 규모(완료 DAU) · 지속 이용(완료 후 7일 재방문)
   function renderKpis(D) {
     const K = D.kpi;
-    const wk = weekToDate(LAST);
-    const when = '전주 대비';
+    // 전주 대비 = 직전 7일 vs 그 전 7일. 7일 지표는 8/3 기준으로 당겨서 비교
     const wow = key => {
-      const m = METRICS.find(x => x.key === key);
+      const m = M(key), wk = weekToDate(m.d7 ? LAST7 : LAST);
       const a = agg(m, ...wk.a), b = agg(m, ...wk.b);
-      return el('div', { class: 'wow' }, chip(a && b ? deltaInfo(m, a.v, b.v) : null), el('span', { class: 'when', text: when }));
+      return el('div', { class: 'wow' }, chip(a && b ? deltaInfo(m, a.v, b.v) : null),
+        el('span', { class: 'when', text: m.d7 ? `전주 대비 · ${rangeText(...wk.a)} 완료분` : '전주 대비' }));
     };
     const frac = k => `${nf.format(k.numerator)} / ${nf.format(k.denominator)}`;
     const bar = v => { const b = el('div', { class: 'bar' }); const i = el('i'); i.style.width = v + '%'; b.append(i); return b; };
-    const kpi = (k, pill, key) => el('div', { class: 'kpi' },
-      el('div', { class: 'label' }, k.label, pill ? el('span', { class: 'pill', text: pill }) : null),
-      el('div', { class: 'value', text: k.value.toFixed(1) + '%' }), bar(k.value), el('div', { class: 'frac', text: frac(k) }),
-      key ? wow(key) : null);
+    const share = K.complete_dau_avg.value / K.visit_dau_avg.value * 100;
     $('#kpis').replaceChildren(
       el('div', { class: 'kpi hero' },
-        el('div', { class: 'label', text: '핵심 · ' + K.launch_to_complete.label }),
+        el('div', { class: 'label', text: '핵심 · 앱 실행 → 세트 완료율' }),
         el('div', { class: 'value', text: K.launch_to_complete.value.toFixed(1) + '%' }), bar(K.launch_to_complete.value),
         el('div', { class: 'frac', text: frac(K.launch_to_complete) + ' 사용자×날짜' }),
         wow('l2c')),
-      kpi(K.launch_to_start, null, 'l2s'), kpi(K.open_start_10m, null, 'o10'), kpi(K.aha_rate, null, null));
+      el('div', { class: 'kpi' },
+        el('div', { class: 'label', text: '세트 완료 DAU (일평균)' }),
+        el('div', { class: 'value', text: nf.format(Math.round(K.complete_dau_avg.value)) + '명' }), bar(share),
+        el('div', { class: 'frac', text: `방문 DAU ${nf.format(Math.round(K.visit_dau_avg.value))}명 중 ${share.toFixed(1)}%` }),
+        wow('cdau')),
+      el('div', { class: 'kpi' },
+        el('div', { class: 'label', text: '완료 후 7일 내 재방문율' }),
+        el('div', { class: 'value', text: K.return_7d.value.toFixed(1) + '%' }), bar(K.return_7d.value),
+        el('div', { class: 'frac', text: `${frac(K.return_7d)} 완료한 사용자×날짜 · ${md(D.meta.kpi_period[0])}~${md(LAST7)}` }),
+        wow('rv7')));
   }
 
   function render(D) {
     DAILY = D.daily; DAILY.forEach(r => { BYDATE[r.date] = r; });
     FIRST = DAILY[0].date; LAST = DAILY[DAILY.length - 1].date;
+    LAST7 = DAILY.filter(r => r.return_7d_rate != null).map(r => r.date).pop() || LAST;
+    // 헤더 밴드에는 데이터 상태만, 기간 설명은 핵심 지표 제목 옆으로
     $('#meta').append(
-      el('span', { text: `KPI 기간 ${md(D.meta.kpi_period[0])}~${md(D.meta.kpi_period[1])} · A/B 테스트 전 기준값` }),
       el('span', { text: `최신 데이터일 ${mdw(LAST)}` }),
-      (() => { const wk = weekToDate(LAST); return el('span', { text: `KPI 전주 대비 = 직전 7일 ${rangeText(...wk.a)} vs 그 전 7일 ${rangeText(...wk.b)}` }); })(),
       el('span', { text: `갱신 ${D.meta.generated_at.replace('T', ' ').slice(0, 16)} KST` }));
+    const wk = weekToDate(LAST);
+    $('#kpi-sub').textContent = `${md(D.meta.kpi_period[0])}~${md(D.meta.kpi_period[1])} · A/B 테스트 전 기준값 · 전주 대비 = 직전 7일 ${rangeText(...wk.a)} vs 그 전 7일`;
     // AI 요약: GitHub Actions가 숫자 검증을 통과한 경우에만 data.json에 넣음 → 없으면 박스 숨김
     const S = D.summary;
     if (S && S.lines && S.lines.length) {
       $('#ai').replaceChildren(
-        el('div', { class: 'head' }, el('span', { class: 'tag', text: 'AI 요약' }),
-          `직전 7일 ${S.period_a} vs 그 전 7일 ${S.period_b}`,
-          el('span', { class: 'src', text: `· ${S.model.replace(/^.*\//, '')} 작성 · 숫자 자동 검증 통과` })),
+        el('div', { class: 'head' }, el('span', { class: 'tag', text: 'AI 요약' }), '이번 주 지표 변화',
+          el('span', { class: 'src', text: `${S.model.replace(/^.*\//, '')} 작성 · 숫자 자동 검증 통과` })),
+        el('div', { class: 'per', text: `직전 7일 ${S.period_a} vs 그 전 7일 ${S.period_b}` +
+          (S.period_a7 ? ` · 재방문·재투표는 ${S.period_a7} vs ${S.period_b7} 완료분` : '') }),
         el('ol', {}, ...S.lines.map(t => el('li', { text: t }))));
       $('#ai').hidden = false;
     }

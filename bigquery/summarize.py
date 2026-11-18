@@ -17,14 +17,16 @@ API = 'https://generativelanguage.googleapis.com/v1beta'
 RATE_PP, COUNT_PCT, REL_PCT = 1.0, 5, 50   # 대시보드와 같은 증감 기준
 
 # 대시보드 METRICS와 같은 정의 (num/den 합으로 비율, avg는 일평균)
+# 마지막 값: True = 7일 지표 (완료 후 D+7까지 봐야 해서 최신일보다 7일 앞선 날짜까지만 있음 → 그 날짜 기준 직전 7일 vs 그 전 7일)
 METRICS = [
-    ('앱 실행 → 세트 완료율 (핵심)', 'rate', 'n_complete', 'n_launch', 1),
-    ('앱 실행 → 투표 시작률', 'rate', 'n_start', 'n_launch', 1),
-    ('받은 투표 확인 → 10분 내 시작률', 'rate', 'n_start_10m', 'n_open_users', 1),
-    ('방문 DAU (일평균)', 'avg', 'visit_dau', None, 0),
-    ('가드레일 · 받은 투표 공유 이용률', 'rate', 'n_open_share_days', 'n_open_days', 1),
-    ('가드레일 · 질문 신고 사용자 비율', 'rel', 'n_report_days', 'n_active_days', 3),
-    ('가드레일 · 차단 사용자 비율', 'rel', 'n_block_days', 'n_active_days', 3),
+    ('앱 실행 → 세트 완료율 (핵심)', 'rate', 'n_complete', 'n_launch', 1, False),
+    ('세트 완료 DAU (일평균)', 'avg', 'complete_dau', None, 0, False),
+    ('방문 DAU (일평균)', 'avg', 'visit_dau', None, 0, False),
+    ('완료 후 7일 내 재방문율', 'rate', 'n_return_7d_c', 'n_complete_users', 1, True),
+    ('완료 후 7일 내 재투표율', 'rate', 'n_recomplete_7d', 'n_complete_users', 1, True),
+    ('가드레일 · 받은 투표 공유 이용률', 'rate', 'n_open_share_days', 'n_open_days', 1, False),
+    ('가드레일 · 질문 신고 사용자 비율', 'rel', 'n_report_days', 'n_active_days', 3, False),
+    ('가드레일 · 차단 사용자 비율', 'rel', 'n_block_days', 'n_active_days', 3, False),
 ]
 WD = '월화수목금토일'
 
@@ -34,15 +36,23 @@ def mdw(iso):
     return f'{d.month}/{d.day}({WD[d.weekday()]})'
 
 
+def periods(last):
+    pa = f'{mdw((last - dt.timedelta(days=6)).isoformat())}~{mdw(last.isoformat())}'
+    pb = f'{mdw((last - dt.timedelta(days=13)).isoformat())}~{mdw((last - dt.timedelta(days=7)).isoformat())}'
+    return pa, pb
+
+
 def facts(D):
     rows = {r['date']: r for r in D['daily']}
     last = dt.date.fromisoformat(D['daily'][-1]['date'])
-    span = lambda s, e: [rows[k] for k in ((last - dt.timedelta(days=i)).isoformat() for i in range(s, e + 1)) if k in rows]
-    A, B = span(0, 6), span(7, 13)
-    pa = f'{mdw((last - dt.timedelta(days=6)).isoformat())}~{mdw(last.isoformat())}'
-    pb = f'{mdw((last - dt.timedelta(days=13)).isoformat())}~{mdw((last - dt.timedelta(days=7)).isoformat())}'
+    last7 = dt.date.fromisoformat(max(r['date'] for r in D['daily'] if r.get('n_return_7d_c') is not None))
+    span = lambda end, s, e: [rows[k] for k in ((end - dt.timedelta(days=i)).isoformat() for i in range(s, e + 1)) if k in rows]
+    pa, pb = periods(last)
+    pa7, pb7 = periods(last7)
     out = []
-    for label, kind, num, den, dg in METRICS:
+    for label, kind, num, den, dg, is7 in METRICS:
+        end = last7 if is7 else last
+        A, B = span(end, 0, 6), span(end, 7, 13)
         def val(rs):
             if kind == 'avg':
                 xs = [r[num] for r in rs if r.get(num) is not None]
@@ -68,7 +78,7 @@ def facts(D):
             r = pp
         # 판정(크게 오름 등)은 넘기지 않음 — 평가는 대시보드 색 배지가 하고, 요약은 숫자 변화만 사실대로
         out.append({'지표': label, '직전 7일': fa, '그 전 7일': fb, '변화': ch})
-    return {'직전 7일': pa, '그 전 7일': pb, '지표': out}
+    return {'직전 7일': pa, '그 전 7일': pb, '7일 재방문·재투표 기간': {'직전 7일': pa7, '그 전 7일': pb7}, '지표': out}
 
 
 NUM = re.compile(r'\d[\d,]*(?:\.\d+)?')
@@ -81,8 +91,8 @@ def allowed_numbers(F):
 
 
 # 지표 이름 → 문장에서 찾을 단어 (방향 검증용, 위에서부터 먼저 맞는 것)
-KEYWORDS = [('10분', ('10분',)), ('투표 시작률', ('시작률',)), ('세트 완료율', ('완료율',)), ('DAU', ('DAU', '방문')),
-            ('공유', ('공유',)), ('신고', ('신고',)), ('차단', ('차단',))]
+KEYWORDS = [('재방문', ('재방문',)), ('재투표', ('재투표',)), ('완료 DAU', ('완료 DAU',)), ('방문 DAU', ('방문 DAU',)),
+            ('세트 완료율', ('완료율',)), ('공유', ('공유',)), ('신고', ('신고',)), ('차단', ('차단',))]
 UP, DOWN = ('올랐', '올라', '증가', '상승', '늘었', '늘어', '높아'), ('내렸', '내려', '감소', '하락', '줄었', '줄어', '떨어', '낮아')
 # 평가 표현 금지 (좋다/나쁘다 판단은 대시보드 배지 몫)
 BANNED = ('크게', '대폭', '큰 폭', '소폭', '급증', '급감', '급락', '안정', '괜찮', '양호', '우려', '개선', '악화',
@@ -120,8 +130,9 @@ PROMPT = """너는 익명 투표 앱 서비스 현황 대시보드의 요약을 
 
 규칙
 - 정확히 3줄. 줄 앞에 번호·기호를 붙이지 마.
-- 1줄: 핵심 지표(앱 실행 → 세트 완료율). 2줄: 투표 시작률, 10분 내 시작률, 방문 DAU. 3줄: 가드레일(공유 이용률, 신고·차단 사용자 비율).
-- 각 지표는 '직전 7일 값(변화)' 형태로 써. 예: "투표 시작률 23.3%(-0.4%p)".
+- 1줄: 앱 실행 → 세트 완료율, 세트 완료 DAU, 방문 DAU. 2줄: 완료 후 7일 내 재방문율·재투표율. 3줄: 가드레일(공유 이용률, 신고·차단 사용자 비율).
+- 각 지표는 '직전 7일 값(변화)' 형태로 써. 예: "세트 완료 DAU 3,740명(-2.1%)".
+- 재방문율·재투표율은 비교 기간이 다르니 기간을 따로 적지 말고 값(변화)만 써.
 - 숫자는 JSON에 있는 값을 그대로 옮겨 써. 계산하거나 반올림하거나 새 숫자를 만들지 마.
 - 좋다·나쁘다를 평가하지 마. '크게', '안정적', '괜찮다', '거의 그대로', '우려' 같은 평가 표현을 쓰지 마. 원인도 추측하지 마.
 - '올랐습니다'·'내렸습니다'를 쓴다면 변화의 +/− 부호와 맞게 써.
@@ -182,9 +193,9 @@ def main():
     try:
         if mock:
             m = F['지표']
-            text = '\n'.join([f"1. 핵심 세트 완료율은 {m[0]['직전 7일']}로 그 전 7일({m[0]['그 전 7일']})과 비교해 {m[0]['변화']}예요.",
-                              f"- 투표 시작률은 {m[1]['직전 7일']}, 10분 내 시작률은 {m[2]['직전 7일']}예요.",
-                              f"공유 이용률 {m[4]['직전 7일']}({m[4]['변화']}), 차단 사용자 비율 {m[6]['직전 7일']}({m[6]['변화']})예요."])
+            text = '\n'.join([f"1. 앱 실행 → 세트 완료율 {m[0]['직전 7일']}({m[0]['변화']}), 세트 완료 DAU {m[1]['직전 7일']}({m[1]['변화']}), 방문 DAU {m[2]['직전 7일']}({m[2]['변화']})",
+                              f"- 완료 후 7일 내 재방문율 {m[3]['직전 7일']}({m[3]['변화']}), 재투표율 {m[4]['직전 7일']}({m[4]['변화']})",
+                              f"받은 투표 공유 이용률 {m[5]['직전 7일']}({m[5]['변화']}), 차단 사용자 비율 {m[7]['직전 7일']}({m[7]['변화']})"])
         else:
             text, used = ask_llm(F)
         lines = to_lines(text)
@@ -201,6 +212,7 @@ def main():
         D['summary'] = {
             'lines': lines, 'model': 'mock' if mock else used,
             'period_a': F['직전 7일'], 'period_b': F['그 전 7일'],
+            'period_a7': F['7일 재방문·재투표 기간']['직전 7일'], 'period_b7': F['7일 재방문·재투표 기간']['그 전 7일'],
             'generated_at': dt.datetime.now(dt.timezone(dt.timedelta(hours=9))).isoformat(timespec='seconds'),
             'verified': True,
         }

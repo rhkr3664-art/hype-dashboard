@@ -39,8 +39,9 @@ k = one(f"""SELECT SUM(visit_dau) visit, SUM(complete_dau) complete, COUNT(*) da
   WHERE event_date BETWEEN '{KPI_START}' AND '{KPI_END}'""")
 o = one("SELECT COUNTIF(in_main_analysis) n, SUM(IF(in_main_analysis, started_10m, 0)) s FROM mart.open_start_10m_user")
 r = one(f"SELECT SUM(n_complete_users) n, SUM(n_recomplete_7d) s FROM mart.repeat_7d_daily WHERE event_date >= '{KPI_START}'")
-a = one("SELECT COUNT(*) n, SUM(aha_reached) s, SUM(IF(aha_reached=1,w2_return,0)) r1, SUM(IF(aha_reached=0,w2_return,0)) r0 FROM mart.aha_users")
-w = rows("SELECT week_no, week_start, n_active, n_next_week_active, next_week_return_rate FROM mart.weekly_return ORDER BY week_no")
+# 완료 후 7일 재방문: 완료한 날(level 2·3) 기준, 7/25~8/3 (D+7까지 보이는 날짜)
+v = one(f"""SELECT SUM(n_user_days) n, SUM(n_return_7d) s FROM mart.return_7d_level_daily
+  WHERE level >= 2 AND event_date >= '{KPI_START}'""")
 
 data = {
     'meta': {
@@ -48,7 +49,7 @@ data = {
         'generated_at': dt.datetime.now(dt.timezone(dt.timedelta(hours=9))).isoformat(timespec='seconds'),
         'source': f'BigQuery {P}.mart',
         'kpi_period': [KPI_START, KPI_END],
-        'note': 'KPI 기간은 A/B 테스트 전 기준 기간. 퍼널·D1은 사용자×날짜 단위, 아하모먼트는 7/18~7/27 신규 가입자 기준',
+        'note': 'KPI 기간은 A/B 테스트 전 기준 기간. 퍼널·7일 재방문은 사용자×날짜 단위, 7일 지표는 D+7까지 보이는 8/3까지',
     },
     'kpi': {
         'visit_dau_avg': {'label': '방문 DAU (일평균)', 'value': round(k['visit'] / k['days'], 1), 'unit': '명'},
@@ -57,10 +58,9 @@ data = {
         'launch_to_start': rate(f['start'], f['launch'], '앱 실행 → 투표 시작률'),
         'start_to_complete': rate(f['complete'], f['start'], '투표 시작 → 세트 완료율'),
         'open_start_10m': rate(o['s'], o['n'], '받은 투표 확인 → 10분 내 시작률'),
-        'aha_rate': rate(a['s'], a['n'], '첫 7일 2회 완료 도달률 (아하모먼트)'),
-        'recomplete_7d': rate(r['s'], r['n'], '이후 7일 세트 재완료율'),
+        'return_7d': rate(v['s'], v['n'], '완료 후 7일 내 재방문율'),
+        'recomplete_7d': rate(r['s'], r['n'], '완료 후 7일 내 재투표율'),
         'd1_return': rate(f['d1_return'], f['d1_base'], '앱 실행일 기준 D1 재방문율'),
-        'next_week_return': rate(w[0]['n_next_week_active'], w[0]['n_active'], '다음 주 재방문율 (7/18주 → 7/25주)'),
     },
     'guardrail': {
         'open_share': rate(k['osd'], k['od'], '받은 투표 공유 이용률'),
@@ -82,18 +82,18 @@ data = {
           SAFE_DIVIDE(f.n_start, f.n_launch) AS launch_to_start, SAFE_DIVIDE(f.n_complete, f.n_launch) AS launch_to_complete,
           f.d1_base, f.d1_return, SAFE_DIVIDE(f.d1_return, f.d1_base) AS d1_return_rate,
           o.n_open_users, o.n_start_10m, o.start_10m_rate,
-          r.n_complete_users, r.n_recomplete_7d, r.recomplete_7d_rate
+          r.n_complete_users, r.n_recomplete_7d, r.recomplete_7d_rate,
+          v.n_return_7d_c, SAFE_DIVIDE(v.n_return_7d_c, r.n_complete_users) AS return_7d_rate
         FROM mart.kpi_daily k
         LEFT JOIN mart.funnel_daily f USING (event_date)
         LEFT JOIN mart.open_start_10m_daily o USING (event_date)
         LEFT JOIN mart.repeat_7d_daily r USING (event_date)
+        LEFT JOIN (SELECT event_date, SUM(n_return_7d) AS n_return_7d_c FROM mart.return_7d_level_daily
+                   WHERE level >= 2 GROUP BY event_date) v USING (event_date)
         ORDER BY date"""),
-    'aha': {
-        'reached_w2_return': round(a['r1'] / a['s'] * 100, 2),
-        'not_reached_w2_return': round(a['r0'] / (a['n'] - a['s']) * 100, 2),
-        'by_signup_day': rows("SELECT * FROM mart.aha_by_signup_day ORDER BY signup_day"),
-    },
-    'weekly_return': w,
+    # 그날 한 행동 수준별 7일 재방문·재투표 (0 기록 없음 · 1 시작만 · 2 완료 1회 · 3 완료 2회 이상)
+    'levels': rows("""SELECT event_date AS date, level, n_user_days, n_return_7d, n_recomplete_7d
+        FROM mart.return_7d_level_daily ORDER BY date, level"""),
     'not_available': ['완료 1건당 실제 투표 수', '0표 완료 비율'],
 }
 OUT.parent.mkdir(parents=True, exist_ok=True)

@@ -1,13 +1,13 @@
 {
   "meta": {
     "title": "익명 투표 앱 서비스 현황 대시보드",
-    "generated_at": "2026-11-17T14:46:49+09:00",
+    "generated_at": "2026-11-18T17:11:42+09:00",
     "source": "BigQuery swift-implement-513705-i7.mart",
     "kpi_period": [
       "2023-07-25",
       "2023-08-10"
     ],
-    "note": "KPI 기간은 A/B 테스트 전 기준 기간. 퍼널·D1은 사용자×날짜 단위, 아하모먼트는 7/18~7/27 신규 가입자 기준"
+    "note": "KPI 기간은 A/B 테스트 전 기준 기간. 퍼널·7일 재방문은 사용자×날짜 단위, 7일 지표는 D+7까지 보이는 8/3까지"
   },
   "kpi": {
     "visit_dau_avg": {
@@ -48,15 +48,15 @@
       "denominator": 94092,
       "unit": "%"
     },
-    "aha_rate": {
-      "label": "첫 7일 2회 완료 도달률 (아하모먼트)",
-      "value": 40.95,
-      "numerator": 206,
-      "denominator": 503,
+    "return_7d": {
+      "label": "완료 후 7일 내 재방문율",
+      "value": 73.64,
+      "numerator": 27900,
+      "denominator": 37888,
       "unit": "%"
     },
     "recomplete_7d": {
-      "label": "이후 7일 세트 재완료율",
+      "label": "완료 후 7일 내 재투표율",
       "value": 50.86,
       "numerator": 19271,
       "denominator": 37888,
@@ -67,13 +67,6 @@
       "value": 28.27,
       "numerator": 104428,
       "denominator": 369388,
-      "unit": "%"
-    },
-    "next_week_return": {
-      "label": "다음 주 재방문율 (7/18주 → 7/25주)",
-      "value": 40.37,
-      "numerator": 51197,
-      "denominator": 126835,
       "unit": "%"
     }
   },
@@ -176,7 +169,9 @@
       "start_10m_rate": 0.235678,
       "n_complete_users": 5619,
       "n_recomplete_7d": 3133,
-      "recomplete_7d_rate": 0.557573
+      "recomplete_7d_rate": 0.557573,
+      "n_return_7d_c": 4355,
+      "return_7d_rate": 0.775049
     },
     {
       "date": "2023-07-19",
@@ -207,7 +202,9 @@
       "start_10m_rate": 0.246142,
       "n_complete_users": 4817,
       "n_recomplete_7d": 2915,
-      "recomplete_7d_rate": 0.605148
+      "recomplete_7d_rate": 0.605148,
+      "n_return_7d_c": 3961,
+      "return_7d_rate": 0.822296
     },
     {
       "date": "2023-07-20",
@@ -238,7 +235,9 @@
       "start_10m_rate": 0.238394,
       "n_complete_users": 6645,
       "n_recomplete_7d": 3281,
-      "recomplete_7d_rate": 0.493755
+      "recomplete_7d_rate": 0.493755,
+      "n_return_7d_c": 4831,
+      "return_7d_rate": 0.727013
     },
     {
       "date": "2023-07-21",
@@ -269,7 +268,9 @@
       "start_10m_rate": 0.229389,
       "n_complete_users": 6781,
       "n_recomplete_7d": 3233,
-      "recomplete_7d_rate": 0.476773
+      "recomplete_7d_rate": 0.476773,
+      "n_return_7d_c": 4891,
+      "return_7d_rate": 0.72128
     },
     {
       "date": "2023-07-22",
@@ -300,7 +301,9 @@
       "start_10m_rate": 0.260383,
       "n_complete_users": 4533,
       "n_recomplete_7d": 2541,
-      "recomplete_7d_rate": 0.560556
+      "recomplete_7d_rate": 0.560556,
+      "n_return_7d_c": 3614,
+      "return_7d_rate": 0.797265
     },
     {
       "date": "2023-07-23",
@@ -331,7 +334,9 @@
       "start_10m_rate": 0.233771,
       "n_complete_users": 5990,
       "n_recomplete_7d": 2913,
-      "recomplete_7d_rate": 0.486311
+      "recomplete_7d_rate": 0.486311,
+      "n_return_7d_c": 4297,
+      "return_7d_rate": 0.717362
     },
     {
       "date": "2023-07-24",
@@ -362,7 +367,9 @@
       "start_10m_rate": 0.234319,
       "n_complete_users": 4443,
       "n_recomplete_7d": 2457,
-      "recomplete_7d_rate": 0.553005
+      "recomplete_7d_rate": 0.553005,
+      "n_return_7d_c": 3479,
+      "return_7d_rate": 0.783029
     },
     {
       "date": "2023-07-25",
@@ -393,7 +400,9 @@
       "start_10m_rate": 0.231792,
       "n_complete_users": 3996,
       "n_recomplete_7d": 2270,
-      "recomplete_7d_rate": 0.568068
+      "recomplete_7d_rate": 0.568068,
+      "n_return_7d_c": 3157,
+      "return_7d_rate": 0.79004
     },
     {
       "date": "2023-07-26",
@@ -424,7 +433,9 @@
       "start_10m_rate": 0.222311,
       "n_complete_users": 3692,
       "n_recomplete_7d": 2077,
-      "recomplete_7d_rate": 0.562568
+      "recomplete_7d_rate": 0.562568,
+      "n_return_7d_c": 2875,
+      "return_7d_rate": 0.778711
     },
     {
       "date": "2023-07-27",
@@ -455,7 +466,9 @@
       "start_10m_rate": 0.21054,
       "n_complete_users": 4795,
       "n_recomplete_7d": 2192,
-      "recomplete_7d_rate": 0.457143
+      "recomplete_7d_rate": 0.457143,
+      "n_return_7d_c": 3360,
+      "return_7d_rate": 0.70073
     },
     {
       "date": "2023-07-28",
@@ -486,7 +499,9 @@
       "start_10m_rate": 0.212357,
       "n_complete_users": 4984,
       "n_recomplete_7d": 2214,
-      "recomplete_7d_rate": 0.444222
+      "recomplete_7d_rate": 0.444222,
+      "n_return_7d_c": 3382,
+      "return_7d_rate": 0.678571
     },
     {
       "date": "2023-07-29",
@@ -517,7 +532,9 @@
       "start_10m_rate": 0.214197,
       "n_complete_users": 4968,
       "n_recomplete_7d": 2234,
-      "recomplete_7d_rate": 0.449678
+      "recomplete_7d_rate": 0.449678,
+      "n_return_7d_c": 3379,
+      "return_7d_rate": 0.680153
     },
     {
       "date": "2023-07-30",
@@ -548,7 +565,9 @@
       "start_10m_rate": 0.206831,
       "n_complete_users": 3596,
       "n_recomplete_7d": 1849,
-      "recomplete_7d_rate": 0.514182
+      "recomplete_7d_rate": 0.514182,
+      "n_return_7d_c": 2670,
+      "return_7d_rate": 0.742492
     },
     {
       "date": "2023-07-31",
@@ -579,7 +598,9 @@
       "start_10m_rate": 0.214719,
       "n_complete_users": 3280,
       "n_recomplete_7d": 1782,
-      "recomplete_7d_rate": 0.543293
+      "recomplete_7d_rate": 0.543293,
+      "n_return_7d_c": 2536,
+      "return_7d_rate": 0.773171
     },
     {
       "date": "2023-08-01",
@@ -610,7 +631,9 @@
       "start_10m_rate": 0.218016,
       "n_complete_users": 3075,
       "n_recomplete_7d": 1605,
-      "recomplete_7d_rate": 0.521951
+      "recomplete_7d_rate": 0.521951,
+      "n_return_7d_c": 2325,
+      "return_7d_rate": 0.756098
     },
     {
       "date": "2023-08-02",
@@ -641,7 +664,9 @@
       "start_10m_rate": 0.217015,
       "n_complete_users": 2839,
       "n_recomplete_7d": 1572,
-      "recomplete_7d_rate": 0.553716
+      "recomplete_7d_rate": 0.553716,
+      "n_return_7d_c": 2185,
+      "return_7d_rate": 0.769637
     },
     {
       "date": "2023-08-03",
@@ -672,7 +697,9 @@
       "start_10m_rate": 0.205135,
       "n_complete_users": 2663,
       "n_recomplete_7d": 1476,
-      "recomplete_7d_rate": 0.554262
+      "recomplete_7d_rate": 0.554262,
+      "n_return_7d_c": 2031,
+      "return_7d_rate": 0.762674
     },
     {
       "date": "2023-08-04",
@@ -703,7 +730,9 @@
       "start_10m_rate": 0.211081,
       "n_complete_users": null,
       "n_recomplete_7d": null,
-      "recomplete_7d_rate": null
+      "recomplete_7d_rate": null,
+      "n_return_7d_c": null,
+      "return_7d_rate": null
     },
     {
       "date": "2023-08-05",
@@ -734,7 +763,9 @@
       "start_10m_rate": 0.20877,
       "n_complete_users": null,
       "n_recomplete_7d": null,
-      "recomplete_7d_rate": null
+      "recomplete_7d_rate": null,
+      "n_return_7d_c": null,
+      "return_7d_rate": null
     },
     {
       "date": "2023-08-06",
@@ -765,7 +796,9 @@
       "start_10m_rate": 0.227277,
       "n_complete_users": null,
       "n_recomplete_7d": null,
-      "recomplete_7d_rate": null
+      "recomplete_7d_rate": null,
+      "n_return_7d_c": null,
+      "return_7d_rate": null
     },
     {
       "date": "2023-08-07",
@@ -796,7 +829,9 @@
       "start_10m_rate": 0.214823,
       "n_complete_users": null,
       "n_recomplete_7d": null,
-      "recomplete_7d_rate": null
+      "recomplete_7d_rate": null,
+      "n_return_7d_c": null,
+      "return_7d_rate": null
     },
     {
       "date": "2023-08-08",
@@ -827,7 +862,9 @@
       "start_10m_rate": 0.21797,
       "n_complete_users": null,
       "n_recomplete_7d": null,
-      "recomplete_7d_rate": null
+      "recomplete_7d_rate": null,
+      "n_return_7d_c": null,
+      "return_7d_rate": null
     },
     {
       "date": "2023-08-09",
@@ -858,7 +895,9 @@
       "start_10m_rate": 0.204922,
       "n_complete_users": null,
       "n_recomplete_7d": null,
-      "recomplete_7d_rate": null
+      "recomplete_7d_rate": null,
+      "n_return_7d_c": null,
+      "return_7d_rate": null
     },
     {
       "date": "2023-08-10",
@@ -889,125 +928,491 @@
       "start_10m_rate": 0.2,
       "n_complete_users": null,
       "n_recomplete_7d": null,
-      "recomplete_7d_rate": null
+      "recomplete_7d_rate": null,
+      "n_return_7d_c": null,
+      "return_7d_rate": null
     }
   ],
-  "aha": {
-    "reached_w2_return": 84.95,
-    "not_reached_w2_return": 19.53,
-    "by_signup_day": [
-      {
-        "signup_day": "2023-07-18",
-        "n_new_users": 89,
-        "n_aha": 47,
-        "aha_rate": 0.52809,
-        "w2_return_reached": 0.87234,
-        "w2_return_not_reached": 0.261905
-      },
-      {
-        "signup_day": "2023-07-19",
-        "n_new_users": 59,
-        "n_aha": 26,
-        "aha_rate": 0.440678,
-        "w2_return_reached": 0.846154,
-        "w2_return_not_reached": 0.30303
-      },
-      {
-        "signup_day": "2023-07-20",
-        "n_new_users": 54,
-        "n_aha": 24,
-        "aha_rate": 0.444444,
-        "w2_return_reached": 0.833333,
-        "w2_return_not_reached": 0.166667
-      },
-      {
-        "signup_day": "2023-07-21",
-        "n_new_users": 53,
-        "n_aha": 18,
-        "aha_rate": 0.339623,
-        "w2_return_reached": 0.833333,
-        "w2_return_not_reached": 0.142857
-      },
-      {
-        "signup_day": "2023-07-22",
-        "n_new_users": 61,
-        "n_aha": 29,
-        "aha_rate": 0.47541,
-        "w2_return_reached": 0.827586,
-        "w2_return_not_reached": 0.15625
-      },
-      {
-        "signup_day": "2023-07-23",
-        "n_new_users": 32,
-        "n_aha": 11,
-        "aha_rate": 0.34375,
-        "w2_return_reached": 0.727273,
-        "w2_return_not_reached": 0.190476
-      },
-      {
-        "signup_day": "2023-07-24",
-        "n_new_users": 45,
-        "n_aha": 19,
-        "aha_rate": 0.422222,
-        "w2_return_reached": 0.947368,
-        "w2_return_not_reached": 0.153846
-      },
-      {
-        "signup_day": "2023-07-25",
-        "n_new_users": 43,
-        "n_aha": 17,
-        "aha_rate": 0.395349,
-        "w2_return_reached": 0.941176,
-        "w2_return_not_reached": 0.115385
-      },
-      {
-        "signup_day": "2023-07-26",
-        "n_new_users": 37,
-        "n_aha": 9,
-        "aha_rate": 0.243243,
-        "w2_return_reached": 0.888889,
-        "w2_return_not_reached": 0.178571
-      },
-      {
-        "signup_day": "2023-07-27",
-        "n_new_users": 30,
-        "n_aha": 6,
-        "aha_rate": 0.2,
-        "w2_return_reached": 0.5,
-        "w2_return_not_reached": 0.25
-      }
-    ]
-  },
-  "weekly_return": [
+  "levels": [
     {
-      "week_no": 1,
-      "week_start": "2023-07-18",
-      "n_active": 126835,
-      "n_next_week_active": 51197,
-      "next_week_return_rate": 0.40365
+      "date": "2023-07-18",
+      "level": 0,
+      "n_user_days": 26951,
+      "n_return_7d": 15795,
+      "n_recomplete_7d": 3179
     },
     {
-      "week_no": 2,
-      "week_start": "2023-07-25",
-      "n_active": 105056,
-      "n_next_week_active": 44278,
-      "next_week_return_rate": 0.42147
+      "date": "2023-07-18",
+      "level": 1,
+      "n_user_days": 2187,
+      "n_return_7d": 1189,
+      "n_recomplete_7d": 418
+    },
+    {
+      "date": "2023-07-18",
+      "level": 2,
+      "n_user_days": 4183,
+      "n_return_7d": 2965,
+      "n_recomplete_7d": 1827
+    },
+    {
+      "date": "2023-07-18",
+      "level": 3,
+      "n_user_days": 1436,
+      "n_return_7d": 1390,
+      "n_recomplete_7d": 1306
+    },
+    {
+      "date": "2023-07-19",
+      "level": 0,
+      "n_user_days": 19711,
+      "n_return_7d": 12745,
+      "n_recomplete_7d": 2631
+    },
+    {
+      "date": "2023-07-19",
+      "level": 1,
+      "n_user_days": 1722,
+      "n_return_7d": 1037,
+      "n_recomplete_7d": 430
+    },
+    {
+      "date": "2023-07-19",
+      "level": 2,
+      "n_user_days": 3461,
+      "n_return_7d": 2638,
+      "n_recomplete_7d": 1677
+    },
+    {
+      "date": "2023-07-19",
+      "level": 3,
+      "n_user_days": 1356,
+      "n_return_7d": 1323,
+      "n_recomplete_7d": 1238
+    },
+    {
+      "date": "2023-07-20",
+      "level": 0,
+      "n_user_days": 28610,
+      "n_return_7d": 15789,
+      "n_recomplete_7d": 2951
+    },
+    {
+      "date": "2023-07-20",
+      "level": 1,
+      "n_user_days": 2714,
+      "n_return_7d": 1406,
+      "n_recomplete_7d": 505
+    },
+    {
+      "date": "2023-07-20",
+      "level": 2,
+      "n_user_days": 5201,
+      "n_return_7d": 3447,
+      "n_recomplete_7d": 2010
+    },
+    {
+      "date": "2023-07-20",
+      "level": 3,
+      "n_user_days": 1444,
+      "n_return_7d": 1384,
+      "n_recomplete_7d": 1271
+    },
+    {
+      "date": "2023-07-21",
+      "level": 0,
+      "n_user_days": 29261,
+      "n_return_7d": 15426,
+      "n_recomplete_7d": 2943
+    },
+    {
+      "date": "2023-07-21",
+      "level": 1,
+      "n_user_days": 2852,
+      "n_return_7d": 1536,
+      "n_recomplete_7d": 498
+    },
+    {
+      "date": "2023-07-21",
+      "level": 2,
+      "n_user_days": 5351,
+      "n_return_7d": 3526,
+      "n_recomplete_7d": 1995
+    },
+    {
+      "date": "2023-07-21",
+      "level": 3,
+      "n_user_days": 1430,
+      "n_return_7d": 1365,
+      "n_recomplete_7d": 1238
+    },
+    {
+      "date": "2023-07-22",
+      "level": 0,
+      "n_user_days": 18806,
+      "n_return_7d": 11634,
+      "n_recomplete_7d": 2526
+    },
+    {
+      "date": "2023-07-22",
+      "level": 1,
+      "n_user_days": 1448,
+      "n_return_7d": 858,
+      "n_recomplete_7d": 341
+    },
+    {
+      "date": "2023-07-22",
+      "level": 2,
+      "n_user_days": 3294,
+      "n_return_7d": 2419,
+      "n_recomplete_7d": 1477
+    },
+    {
+      "date": "2023-07-22",
+      "level": 3,
+      "n_user_days": 1239,
+      "n_return_7d": 1195,
+      "n_recomplete_7d": 1064
+    },
+    {
+      "date": "2023-07-23",
+      "level": 0,
+      "n_user_days": 24968,
+      "n_return_7d": 12634,
+      "n_recomplete_7d": 2434
+    },
+    {
+      "date": "2023-07-23",
+      "level": 1,
+      "n_user_days": 2417,
+      "n_return_7d": 1264,
+      "n_recomplete_7d": 392
+    },
+    {
+      "date": "2023-07-23",
+      "level": 2,
+      "n_user_days": 4726,
+      "n_return_7d": 3108,
+      "n_recomplete_7d": 1840
+    },
+    {
+      "date": "2023-07-23",
+      "level": 3,
+      "n_user_days": 1264,
+      "n_return_7d": 1189,
+      "n_recomplete_7d": 1073
+    },
+    {
+      "date": "2023-07-24",
+      "level": 0,
+      "n_user_days": 18225,
+      "n_return_7d": 11358,
+      "n_recomplete_7d": 2259
+    },
+    {
+      "date": "2023-07-24",
+      "level": 1,
+      "n_user_days": 1554,
+      "n_return_7d": 893,
+      "n_recomplete_7d": 347
+    },
+    {
+      "date": "2023-07-24",
+      "level": 2,
+      "n_user_days": 3404,
+      "n_return_7d": 2468,
+      "n_recomplete_7d": 1528
+    },
+    {
+      "date": "2023-07-24",
+      "level": 3,
+      "n_user_days": 1039,
+      "n_return_7d": 1011,
+      "n_recomplete_7d": 929
+    },
+    {
+      "date": "2023-07-25",
+      "level": 0,
+      "n_user_days": 15931,
+      "n_return_7d": 10087,
+      "n_recomplete_7d": 1987
+    },
+    {
+      "date": "2023-07-25",
+      "level": 1,
+      "n_user_days": 1386,
+      "n_return_7d": 812,
+      "n_recomplete_7d": 304
+    },
+    {
+      "date": "2023-07-25",
+      "level": 2,
+      "n_user_days": 3033,
+      "n_return_7d": 2226,
+      "n_recomplete_7d": 1406
+    },
+    {
+      "date": "2023-07-25",
+      "level": 3,
+      "n_user_days": 963,
+      "n_return_7d": 931,
+      "n_recomplete_7d": 864
+    },
+    {
+      "date": "2023-07-26",
+      "level": 0,
+      "n_user_days": 15101,
+      "n_return_7d": 9593,
+      "n_recomplete_7d": 1907
+    },
+    {
+      "date": "2023-07-26",
+      "level": 1,
+      "n_user_days": 1343,
+      "n_return_7d": 809,
+      "n_recomplete_7d": 353
+    },
+    {
+      "date": "2023-07-26",
+      "level": 2,
+      "n_user_days": 2831,
+      "n_return_7d": 2041,
+      "n_recomplete_7d": 1299
+    },
+    {
+      "date": "2023-07-26",
+      "level": 3,
+      "n_user_days": 861,
+      "n_return_7d": 834,
+      "n_recomplete_7d": 778
+    },
+    {
+      "date": "2023-07-27",
+      "level": 0,
+      "n_user_days": 24279,
+      "n_return_7d": 12285,
+      "n_recomplete_7d": 2181
+    },
+    {
+      "date": "2023-07-27",
+      "level": 1,
+      "n_user_days": 2239,
+      "n_return_7d": 1097,
+      "n_recomplete_7d": 382
+    },
+    {
+      "date": "2023-07-27",
+      "level": 2,
+      "n_user_days": 3934,
+      "n_return_7d": 2540,
+      "n_recomplete_7d": 1452
+    },
+    {
+      "date": "2023-07-27",
+      "level": 3,
+      "n_user_days": 861,
+      "n_return_7d": 820,
+      "n_recomplete_7d": 740
+    },
+    {
+      "date": "2023-07-28",
+      "level": 0,
+      "n_user_days": 23342,
+      "n_return_7d": 11328,
+      "n_recomplete_7d": 2031
+    },
+    {
+      "date": "2023-07-28",
+      "level": 1,
+      "n_user_days": 2240,
+      "n_return_7d": 1086,
+      "n_recomplete_7d": 379
+    },
+    {
+      "date": "2023-07-28",
+      "level": 2,
+      "n_user_days": 4075,
+      "n_return_7d": 2527,
+      "n_recomplete_7d": 1457
+    },
+    {
+      "date": "2023-07-28",
+      "level": 3,
+      "n_user_days": 909,
+      "n_return_7d": 855,
+      "n_recomplete_7d": 757
+    },
+    {
+      "date": "2023-07-29",
+      "level": 0,
+      "n_user_days": 23345,
+      "n_return_7d": 11083,
+      "n_recomplete_7d": 1887
+    },
+    {
+      "date": "2023-07-29",
+      "level": 1,
+      "n_user_days": 2316,
+      "n_return_7d": 1126,
+      "n_recomplete_7d": 368
+    },
+    {
+      "date": "2023-07-29",
+      "level": 2,
+      "n_user_days": 4083,
+      "n_return_7d": 2553,
+      "n_recomplete_7d": 1502
+    },
+    {
+      "date": "2023-07-29",
+      "level": 3,
+      "n_user_days": 885,
+      "n_return_7d": 826,
+      "n_recomplete_7d": 732
+    },
+    {
+      "date": "2023-07-30",
+      "level": 0,
+      "n_user_days": 16083,
+      "n_return_7d": 9860,
+      "n_recomplete_7d": 1755
+    },
+    {
+      "date": "2023-07-30",
+      "level": 1,
+      "n_user_days": 1475,
+      "n_return_7d": 829,
+      "n_recomplete_7d": 289
+    },
+    {
+      "date": "2023-07-30",
+      "level": 2,
+      "n_user_days": 2850,
+      "n_return_7d": 1957,
+      "n_recomplete_7d": 1214
+    },
+    {
+      "date": "2023-07-30",
+      "level": 3,
+      "n_user_days": 746,
+      "n_return_7d": 713,
+      "n_recomplete_7d": 635
+    },
+    {
+      "date": "2023-07-31",
+      "level": 0,
+      "n_user_days": 14437,
+      "n_return_7d": 9019,
+      "n_recomplete_7d": 1739
+    },
+    {
+      "date": "2023-07-31",
+      "level": 1,
+      "n_user_days": 1211,
+      "n_return_7d": 729,
+      "n_recomplete_7d": 269
+    },
+    {
+      "date": "2023-07-31",
+      "level": 2,
+      "n_user_days": 2597,
+      "n_return_7d": 1878,
+      "n_recomplete_7d": 1190
+    },
+    {
+      "date": "2023-07-31",
+      "level": 3,
+      "n_user_days": 683,
+      "n_return_7d": 658,
+      "n_recomplete_7d": 592
+    },
+    {
+      "date": "2023-08-01",
+      "level": 0,
+      "n_user_days": 13485,
+      "n_return_7d": 8382,
+      "n_recomplete_7d": 1525
+    },
+    {
+      "date": "2023-08-01",
+      "level": 1,
+      "n_user_days": 1132,
+      "n_return_7d": 686,
+      "n_recomplete_7d": 262
+    },
+    {
+      "date": "2023-08-01",
+      "level": 2,
+      "n_user_days": 2470,
+      "n_return_7d": 1742,
+      "n_recomplete_7d": 1073
+    },
+    {
+      "date": "2023-08-01",
+      "level": 3,
+      "n_user_days": 605,
+      "n_return_7d": 583,
+      "n_recomplete_7d": 532
+    },
+    {
+      "date": "2023-08-02",
+      "level": 0,
+      "n_user_days": 12835,
+      "n_return_7d": 7945,
+      "n_recomplete_7d": 1538
+    },
+    {
+      "date": "2023-08-02",
+      "level": 1,
+      "n_user_days": 1086,
+      "n_return_7d": 672,
+      "n_recomplete_7d": 239
+    },
+    {
+      "date": "2023-08-02",
+      "level": 2,
+      "n_user_days": 2275,
+      "n_return_7d": 1636,
+      "n_recomplete_7d": 1064
+    },
+    {
+      "date": "2023-08-02",
+      "level": 3,
+      "n_user_days": 564,
+      "n_return_7d": 549,
+      "n_recomplete_7d": 508
+    },
+    {
+      "date": "2023-08-03",
+      "level": 0,
+      "n_user_days": 11871,
+      "n_return_7d": 7303,
+      "n_recomplete_7d": 1425
+    },
+    {
+      "date": "2023-08-03",
+      "level": 1,
+      "n_user_days": 1071,
+      "n_return_7d": 643,
+      "n_recomplete_7d": 254
+    },
+    {
+      "date": "2023-08-03",
+      "level": 2,
+      "n_user_days": 2165,
+      "n_return_7d": 1554,
+      "n_recomplete_7d": 1030
+    },
+    {
+      "date": "2023-08-03",
+      "level": 3,
+      "n_user_days": 498,
+      "n_return_7d": 477,
+      "n_recomplete_7d": 446
     }
   ],
   "not_available": [
     "완료 1건당 실제 투표 수",
     "0표 완료 비율"
-  ],
-  "summary": {
-    "lines": [
-      "앱 실행 → 세트 완료율 15.9%(-0.8%p)",
-      "앱 실행 → 투표 시작률 23.3%(-0.4%p), 받은 투표 확인 → 10분 내 시작률 21.4%(+0.1%p), 방문 DAU 22,995명(+6.4%)",
-      "받은 투표 공유 이용률 7.5%(-1.8%p), 질문 신고 사용자 비율 0.021%(-16%), 차단 사용자 비율 0.026%(-24%)"
-    ],
-    "model": "gemini-flash-lite-latest",
-    "period_a": "8/4(금)~8/10(목)",
-    "period_b": "7/28(금)~8/3(목)",
-    "generated_at": "2026-11-17T14:46:58+09:00",
-    "verified": true
-  }
+  ]
 }

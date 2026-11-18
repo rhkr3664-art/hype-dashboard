@@ -1,4 +1,4 @@
-"""mart 테이블 숫자를 최종본_ver1.ipynb 실행값과 비교한다."""
+"""mart 테이블 숫자를 최종본 노트북 실행값과 비교한다 (새 지표는 기존 검증 숫자와 서로 맞는지 확인)."""
 import sys
 from google.cloud import bigquery
 sys.stdout.reconfigure(encoding='utf-8')
@@ -21,9 +21,13 @@ r = q("""SELECT SUM(n_complete_users) a, SUM(n_recomplete_7d) b FROM mart.repeat
 checks += [('7일 재완료: 분모 (7/25~8/3)', r.a, 37888), ('7일 재완료: 재완료', r.b, 19271)]
 w = q("""SELECT n_active a, n_next_week_active b FROM mart.weekly_return WHERE week_no = 1""")
 checks += [('W1 활동자 (7/18~24)', w.a, 126835), ('W2 재방문자', w.b, 33266 + 4385 + 13546)]
-h = q("""SELECT COUNT(*) a, SUM(aha_reached) b, SUM(IF(aha_reached=1,w2_return,0)) c, SUM(IF(aha_reached=0,w2_return,0)) d FROM mart.aha_users""")
-checks += [('아하: 신규 가입자', h.a, 503), ('아하: 도달', h.b, 206), ('아하: 도달자 재방문', h.c, round(206 * .8495)),
-           ('아하: 미도달자 재방문', h.d, round(297 * .1953))]
+# 완료 후 7일 재방문·재투표 (행동 수준별): 노트북 값이 없는 새 지표라 기존 검증 숫자와 서로 맞는지로 확인
+#   완료한 날(level 2·3) 합 = 7일 재완료 분모·분자, 전체 사용자·일 합 = 같은 기간 방문 DAU 합
+h = q("""SELECT SUM(IF(level >= 2, n_user_days, 0)) a, SUM(IF(level >= 2, n_recomplete_7d, 0)) b, SUM(n_user_days) c,
+  (SELECT SUM(visit_dau) FROM mart.kpi_daily WHERE event_date BETWEEN '2023-07-25' AND '2023-08-03') d
+  FROM mart.return_7d_level_daily WHERE event_date >= '2023-07-25'""")
+checks += [('7일 재방문: 완료한 날 (= 재완료 분모)', h.a, 37888), ('7일 재방문: 재투표 (= 재완료)', h.b, 19271),
+           ('7일 재방문: 전체 사용자·일 (= 방문 DAU 합)', h.c, h.d)]
 
 print(f'{"항목":<28}{"BigQuery":>10}{"노트북":>10}  결과')
 for name, got, want in checks:
