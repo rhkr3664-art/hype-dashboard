@@ -22,11 +22,11 @@
   --blue: #2a78d6;   --blue-wash: rgba(42,120,214,0.10);  --blue-soft: #e6f0fc;
   --orange: #eb6834; --orange-wash: rgba(235,104,52,0.10); --orange-soft: #fdeee6;
   --aqua: #1baf7a;   --aqua-wash: rgba(27,175,122,0.10);   --aqua-soft: #e3f6ee;
-  /* 비교 기간 막대: 이번 기간 = 진한 남보라, 비교 기간 = 회색 */
-  --cur: #3a2d9c; --base: #c3c2b7; --prev: #9a9993; /* 이전(비교) 기간 글자: 중간 회색 */
+  /* 테마 = 발표 PPT 초록. 비교 기간 막대: 이번 기간 = 진한 초록, 비교 기간 = 회색 */
+  --cur: #0b7556; --base: #c3c2b7; --prev: #9a9993; /* 이전(비교) 기간 글자: 중간 회색 */
   /* 증감 표시: 좋아짐 = 초록, 나빠짐 = 빨강, 기준 안 = 회색 (항상 ▲▼ 기호와 함께) */
   --good: #1a7f47; --good-soft: #e1f3e8; --bad: #c93636; --bad-soft: #fbe9e9; --flat: #6b6a66; --flat-soft: #f0efec;
-  --hero-from: #1b1650; --hero-mid: #3a2d9c; --hero-to: #7a3fb8;
+  --hero-from: #08523e; --hero-mid: #0e7f60; --hero-to: #14a27b;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -36,9 +36,9 @@
     --blue: #3987e5; --blue-wash: rgba(57,135,229,0.16); --blue-soft: rgba(57,135,229,0.16);
     --orange: #d95926; --orange-wash: rgba(217,89,38,0.16); --orange-soft: rgba(217,89,38,0.18);
     --aqua: #199e70; --aqua-wash: rgba(25,158,112,0.16); --aqua-soft: rgba(25,158,112,0.18);
-    --cur: #9085e9; --base: #5a5955; --prev: #8f8e88;
+    --cur: #4cc9a0; --base: #5a5955; --prev: #8f8e88;
     --good: #5cc98a; --good-soft: rgba(26,127,71,0.24); --bad: #ef7676; --bad-soft: rgba(208,59,59,0.22); --flat: #b0afa8; --flat-soft: #2c2c2a;
-    --hero-from: #120f38; --hero-mid: #2a2075; --hero-to: #55308a;
+    --hero-from: #05372a; --hero-mid: #0a5a44; --hero-to: #0e7f60;
   }
 }
 :root[data-theme="dark"] {
@@ -48,9 +48,9 @@
   --blue: #3987e5; --blue-wash: rgba(57,135,229,0.16); --blue-soft: rgba(57,135,229,0.16);
   --orange: #d95926; --orange-wash: rgba(217,89,38,0.16); --orange-soft: rgba(217,89,38,0.18);
   --aqua: #199e70; --aqua-wash: rgba(25,158,112,0.16); --aqua-soft: rgba(25,158,112,0.18);
-  --cur: #9085e9; --base: #5a5955; --prev: #8f8e88;
+  --cur: #4cc9a0; --base: #5a5955; --prev: #8f8e88;
   --good: #5cc98a; --good-soft: rgba(26,127,71,0.24); --bad: #ef7676; --bad-soft: rgba(208,59,59,0.22); --flat: #b0afa8; --flat-soft: #2c2c2a;
-  --hero-from: #120f38; --hero-mid: #2a2075; --hero-to: #55308a;
+  --hero-from: #05372a; --hero-mid: #0a5a44; --hero-to: #0e7f60;
 }
 * { box-sizing: border-box; }
 body {
@@ -62,13 +62,13 @@ body {
 
 /* ---------- header band ---------- */
 .band {
-  background: radial-gradient(1200px 400px at 85% -10%, rgba(255,140,190,0.35), transparent 60%),
+  background: radial-gradient(1200px 400px at 85% -10%, rgba(169,220,200,0.30), transparent 60%),
               linear-gradient(120deg, var(--hero-from), var(--hero-mid) 55%, var(--hero-to));
   color: #fff; padding: 28px 0 28px;
 }
 .brand { display: flex; align-items: center; gap: 10px; }
-.logo { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, #ff8ac2, #ffb36b);
-  display: grid; place-items: center; font-weight: 800; color: #1b1650; font-size: 17px; }
+.logo { width: 34px; height: 34px; border-radius: 10px; background: #e4f4ed;
+  display: grid; place-items: center; font-weight: 800; color: #0b7556; font-size: 17px; }
 .band h1 { font-size: 22px; margin: 0; font-weight: 700; letter-spacing: -0.01em; }
 .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .meta span { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.88); border-radius: 999px; padding: 2px 10px; font-size: 12.5px; }
@@ -95,16 +95,17 @@ body {
 .top { margin-top: 20px; }
 .ai { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--hero-to); border-radius: 14px; padding: 14px 18px 14px 16px; box-shadow: var(--shadow); }
 .ai .head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; font-weight: 650; }
-.ai .tag { font-size: 11.5px; font-weight: 700; border-radius: 999px; padding: 1px 9px; background: linear-gradient(135deg, #ff8ac2, #ffb36b); color: #1b1650; }
+.ai .tag { font-size: 11.5px; font-weight: 700; border-radius: 999px; padding: 1px 9px; background: #e4f4ed; color: #0b7556; }
 .ai .src { font-size: 12px; font-weight: 400; color: var(--muted); }
 .ai .per { font-size: 12px; color: var(--ink-2); margin-top: 4px; }
 .ai ol { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 3px; font-size: 14px; line-height: 1.55; color: var(--ink); }
-.kpi-title { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin: 26px 0 10px; }
-.kpi-title h2 { font-size: 17px; margin: 0; font-weight: 700; }
-.kpi-title span { font-size: 12.5px; color: var(--muted); }
+/* 핵심 지표는 헤더 밴드 안 (흰 카드), AI 요약은 밴드 밖 바로 아래 */
+.kpi-title { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin: 22px 0 10px; }
+.kpi-title h2 { font-size: 16px; margin: 0; font-weight: 700; color: #fff; }
+.kpi-title span { font-size: 12.5px; color: rgba(255,255,255,0.78); }
 .kpis { display: grid; grid-template-columns: 1.25fr 1fr 1fr; gap: 14px; }
 @media (max-width: 860px) { .kpis { grid-template-columns: 1fr; } }
-.kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px 18px; box-shadow: var(--shadow); }
+.kpi { color: var(--ink); background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px 18px; box-shadow: var(--shadow); }
 .kpi .label { font-size: 13px; color: var(--ink-2); }
 .kpi .value { font-size: 34px; font-weight: 700; margin-top: 6px; line-height: 1.1; letter-spacing: -0.01em; }
 .kpi .frac { font-size: 12px; color: var(--muted); margin-top: 4px; }
@@ -245,14 +246,12 @@ footer { margin: 48px 0 40px; color: var(--muted); font-size: 12.5px; }
   <div class="wrap">
     <div class="brand"><div class="logo" aria-hidden="true">?</div><h1>익명 투표 앱 서비스 현황</h1></div>
     <div class="meta" id="meta"></div>
-  </div>
-</div>
-<div class="wrap">
-  <div class="top">
-    <div class="ai" id="ai" hidden></div>
     <div class="kpi-title"><h2>핵심 지표</h2><span id="kpi-sub"></span></div>
     <div class="kpis" id="kpis"></div>
   </div>
+</div>
+<div class="wrap">
+  <div class="top"><div class="ai" id="ai" hidden></div></div>
   <div id="app"><p style="margin-top:24px;color:var(--ink-2)">데이터를 불러오는 중…</p></div>
   <footer>
     데이터: BigQuery <code>mart</code> → <code>data.json</code> (GitHub Actions 수동 실행 시 갱신, 노트북 결과와 맞춘 검증 항목을 모두 통과해야 반영).
